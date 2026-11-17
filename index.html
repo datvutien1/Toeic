@@ -1,0 +1,1491 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Học và ôn từ tiếng Anh theo lịch lặp lại ngắt quãng.">
+  <title>Sổ từ · Ôn tập theo lịch</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      --ink: #182f29;
+      --muted: #53665f;
+      --paper: #ffffff;
+      --white: #fcfdfb;
+      --line: #d8dfd5;
+      --green: #205e49;
+      --mint: #e7f1e6;
+      --amber: #f7eee0;
+      --wrong: #843e26;
+      --accent: #205e49;
+      --accent-hover: #174736;
+      --track: #e0e7df;
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --ink: #eef4ee;
+      --muted: #bbc9c1;
+      --paper: #101210;
+      --white: #1a1e1b;
+      --line: #414d45;
+      --green: #a8e3c5;
+      --mint: #23392d;
+      --amber: #3a2b22;
+      --wrong: #ffc5a8;
+      --accent: #23664e;
+      --accent-hover: #2d755b;
+      --track: #344139;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: var(--paper); color: var(--ink); }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; color: inherit; }
+    button:disabled { cursor: default; }
+    :focus-visible { outline: 3px solid #b45420; outline-offset: 3px; }
+    .shell { width: min(720px, calc(100% - 36px)); margin-inline: auto; }
+    header { background: var(--white); border-bottom: 1px solid var(--line); }
+    .bar, .exercise-head, .actions, .progress-caption {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .bar { min-height: 64px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 750; }
+    .brand-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--accent); color: white; font-family: Georgia, serif; }
+    .settings { position: relative; }
+    .settings summary { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; list-style: none; }
+    .settings summary::-webkit-details-marker { display: none; }
+    .settings summary:hover, .settings[open] summary { background: var(--mint); }
+    .settings fieldset { position: absolute; z-index: 2; inset: auto 0 auto auto; width: max-content; margin: 7px 0 0; padding: 9px 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); }
+    .settings legend { padding: 0 4px; font-weight: 650; }
+    .settings label { display: flex; gap: 7px; align-items: center; margin: 4px 0; font-weight: 400; }
+    .settings input { width: auto; accent-color: var(--accent); }
+    .muted { color: var(--muted); }
+    .small { font-size: .86rem; }
+    main { padding-block: 34px; }
+    .eyebrow { margin: 0; color: var(--green); font-size: .75rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 7px 0 10px; font: 500 clamp(2.4rem, 8vw, 4rem)/1.06 Georgia, serif; letter-spacing: -.04em; }
+    .intro { margin: 0 0 21px; }
+    .home-grid { display: grid; gap: 14px; }
+    .today { background: var(--mint); }
+    .today-count { margin: 8px 0; font-size: 2.5rem; line-height: 1; font-weight: 750; }
+    .today-count small { font-size: 1rem; }
+    .today-detail { margin: 8px 0 0; }
+    .next-review { margin: 12px 0 0; padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--white); color: var(--ink); font-weight: 650; }
+    .chart { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; list-style: none; padding: 0; margin: 16px 0 0; text-align: center; }
+    .chart li { display: grid; gap: 7px; grid-template-rows: 115px 2.4em; font-size: .8rem; }
+    .chart-plot { display: flex; flex-direction: column; justify-content: end; align-items: center; gap: 4px; border-bottom: 1px solid var(--line); }
+    .chart-bar { width: min(75%, 52px); border-radius: 6px 6px 0 0; }
+    .session-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+    .stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; padding: 0; margin: 0 0 13px; list-style: none; }
+    .stages.review { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .stage { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); color: var(--muted); }
+    .stage[aria-current="step"] { background: var(--mint); border-color: var(--green); color: var(--ink); }
+    .stage strong, .stage small { display: block; }
+    .stage small { margin-top: 3px; }
+    progress { display: block; width: 100%; height: 7px; margin: 6px 0 17px; border: 0; border-radius: 8px; overflow: hidden; background: var(--track); }
+    progress::-webkit-progress-bar { background: var(--track); }
+    progress::-webkit-progress-value { background: var(--green); }
+    progress::-moz-progress-bar { background: var(--green); }
+    .panel { padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: var(--white); }
+    h2 { margin: 0; font-size: 1.1rem; }
+    .prompt { display: grid; place-items: center; gap: 8px; min-height: 120px; margin: 13px 0 15px; padding: 14px; border-radius: 12px; background: var(--mint); text-align: center; }
+    .prompt[data-phase="write"] { background: var(--amber); }
+    .term { font: 500 clamp(2rem, 7vw, 3.1rem)/1.08 Georgia, serif; overflow-wrap: anywhere; }
+    .model-meaning { margin: 0; padding: 5px 13px; border-radius: 8px; background: var(--white); color: var(--ink); font-size: clamp(1.15rem, 3.5vw, 1.55rem); line-height: 1.35; font-weight: 750; text-align: center; overflow-wrap: anywhere; }
+    .choices, .scores { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+    .choice { display: flex; align-items: center; gap: 9px; text-align: left; overflow-wrap: anywhere; }
+    .choice-key { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--line); border-radius: 6px; font-size: .78rem; }
+    .btn { padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--white); font-weight: 650; }
+    .btn:hover:not(:disabled) { border-color: var(--green); background: var(--mint); }
+    .btn.primary { border-color: var(--accent); background: var(--accent); color: white; }
+    .btn.primary:hover { background: var(--accent-hover); }
+    .choice[data-status="correct"] { border-color: var(--green); background: var(--mint); }
+    .choice[data-status="wrong"] { border-color: #ad755e; color: var(--wrong); background: var(--amber); }
+    label { display: block; margin-bottom: 6px; font-weight: 650; }
+    #answer { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); color: var(--ink); }
+    .actions { flex-wrap: wrap; justify-content: flex-end; margin-top: 13px; }
+    .feedback, .transition { margin: 12px 0 0; padding: 10px 12px; border-radius: 9px; background: var(--mint); overflow-wrap: anywhere; }
+    .feedback[data-tone="retry"], .feedback[data-tone="wrong"] { background: var(--amber); color: var(--wrong); }
+    .feedback p, .transition p { margin: 0; }
+    .feedback p + p, .transition p + p { margin-top: 5px; }
+    .hint-pattern { font-family: ui-monospace, monospace; font-weight: 700; }
+    .transition { margin: 0 0 12px; font-size: .9rem; }
+    .score { padding: 14px; border-radius: 10px; background: var(--mint); }
+    .score strong { display: block; margin-top: 4px; font-size: 1.5rem; }
+    .scores { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .audio-controls { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .audio-controls p { margin: 0; text-align: center; }
+    .listen-actions { margin-bottom: 12px; }
+    .done-copy { margin: 10px 0 17px; }
+    .ipa { margin: 0; color: var(--muted); font-size: 1rem; overflow-wrap: anywhere; }
+    .choice > span:last-child { min-width: 0; }
+    main.shell:has(#lesson:not([hidden])) { width: min(960px, calc(100% - 28px)); }
+    #exercise { scroll-margin-block: 10px; }
+    #exercise[data-compact] { padding: clamp(10px, 2vw, 16px); }
+    #exercise[data-compact] .prompt { min-height: 0; padding: 9px; gap: 5px; margin-block: 8px; }
+    #exercise[data-compact] .term { font-size: clamp(1.1rem, 3vw, 1.65rem); line-height: 1.2; }
+    #exercise[data-compact] .choices { gap: 6px; }
+    #exercise[data-compact] .choice { padding: 6px 8px; font-size: .9rem; line-height: 1.25; align-items: start; }
+    @media (max-height: 780px) {
+      #lesson > h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); margin-block: 4px; }
+      #lesson .intro, #lesson .session-nav { margin-bottom: 8px; }
+      #exercise .prompt { min-height: 0; }
+    }
+    @media (max-width: 480px) {
+      main { padding-block: 24px; }
+      .panel { padding: 15px; }
+      .choices { grid-template-columns: 1fr; }
+      .stages:not(.review) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .prompt { min-height: 104px; }
+    }
+
+    .deck-toolbar { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: end; gap: 12px; margin-bottom: 16px; }
+    select, .import-dialog input, .import-dialog textarea { font: inherit; max-width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); color: var(--ink); }
+    .import-dialog { width: min(580px, calc(100% - 28px)); max-height: calc(100dvh - 32px); padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--white); color: var(--ink); }
+    .import-dialog::backdrop { background: #10191299; }
+    .import-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+    .import-field { margin-top: 12px; }
+    .import-field select, .import-field input, .import-field textarea { width: 100%; }
+    .import-field textarea { min-height: 90px; resize: vertical; }
+    .import-preview { max-height: 180px; overflow: auto; padding-left: 22px; overflow-wrap: anywhere; }
+    #import-result { margin: 0 0 14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell bar">
+      <div class="brand"><span class="brand-icon" aria-hidden="true">Aa</span> Sổ từ</div>
+      <details class="settings" id="settings">
+        <summary aria-label="Tùy chọn giao diện">
+          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </summary>
+        <fieldset>
+          <legend>Giao diện</legend>
+          <label><input type="radio" name="theme" value="light" checked> Nền trắng</label>
+          <label><input type="radio" name="theme" value="dark"> Nền đen</label>
+        </fieldset>
+
+      </details>
+    </div>
+  </header>
+
+  <section class="shell panel" id="cloud-panel" aria-labelledby="cloud-title">
+    <h2 id="cloud-title">Đồng bộ Sổ từ</h2>
+    <form id="cloud-login" hidden>
+      <div class="import-field"><label for="cloud-email">Email Sổ từ</label><input id="cloud-email" type="email" autocomplete="username" required></div>
+      <div class="import-field"><label for="cloud-password">Mật khẩu Sổ từ</label><input id="cloud-password" type="password" autocomplete="current-password" required></div>
+      <div class="actions"><button class="btn primary" type="submit">Đăng nhập</button></div>
+    </form>
+    <div class="actions" id="cloud-actions" hidden>
+        <button class="btn" type="button" id="export-study">Xuất dữ liệu</button>
+      <label class="btn" for="cloud-import">Nhập bản sao lưu</label>
+      <input id="cloud-import" type="file" accept=".json,application/json" style="max-width:100%">
+      <button class="btn" type="button" id="cloud-retry">Đồng bộ lại</button>
+      <button class="btn" type="button" id="cloud-logout">Đăng xuất</button>
+    </div>
+    <p id="cloud-status" role="status">Đang kết nối…</p>
+  </section>
+  <main class="shell" inert>
+    <p class="feedback small" id="storage-notice" role="status" hidden>Trình duyệt không lưu được dữ liệu trên máy. Các thay đổi chưa lưu sẽ mất khi tải lại trang.</p>
+    <section id="home" aria-labelledby="home-title">
+      <p class="eyebrow">Sổ từ · Tiếng Anh</p>
+      <h1 id="home-title" tabindex="-1">Từ vựng</h1>
+      <p class="intro muted">Ôn tập ngắt quãng · Từ nhớ tốt sẽ được ôn lại sau lâu hơn.</p>
+
+      <div class="deck-toolbar">
+        <div>
+          <label for="deck-filter">Bộ từ đang học</label>
+          <select id="deck-filter"></select>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button" id="delete-deck" hidden>Xóa bộ từ</button>
+          <button class="btn" type="button" id="open-import">+ Thêm từ</button>
+        </div>
+      </div>
+      <p class="feedback" id="import-result" role="status" hidden></p>
+      <div class="home-grid">
+        <section class="panel today" aria-labelledby="today-title">
+          <h2 id="today-title">Từ đến hạn ôn</h2>
+          <p class="today-count"><span id="today-count">0</span> <small>từ</small></p>
+          <p class="today-detail muted" id="today-detail"></p>
+          <p class="next-review" id="next-review" hidden></p>
+          <div class="actions">
+            <button class="btn" type="button" id="start-new" hidden>Học từ mới →</button>
+            <button class="btn primary" type="button" id="start-today" hidden>Ôn tập ngay →</button>
+          </div>
+        </section>
+        <section class="panel" aria-labelledby="chart-title">
+          <h2 id="chart-title">Cấp độ ghi nhớ</h2>
+          <ul class="chart" id="level-chart" aria-label="Số từ ở từng cấp độ"></ul>
+        </section>
+      </div>
+    </section>
+    <section id="lesson" aria-labelledby="lesson-title" hidden>
+    <div class="session-nav">
+      <button class="btn" id="back-home" type="button">← Trang chủ</button>
+      <span class="muted small" id="session-kind"></span>
+    </div>
+    <p class="eyebrow">Tiếng Anh · Tiếng Việt</p>
+    <h1 id="lesson-title">Buổi học</h1>
+    <p class="intro muted" id="lesson-intro"></p>
+
+    <ol class="stages" id="lesson-stages" aria-label="Các phần trong buổi học">
+      <li class="stage" id="stage-learn" aria-current="step"><strong>1. Làm quen</strong><small>Gõ theo mẫu</small></li>
+      <li class="stage" id="stage-read"><strong>2. Đọc</strong><small>Anh → Việt và Việt → Anh</small></li>
+      <li class="stage" id="stage-listen"><strong>3. Nghe</strong><small>Gõ từ nghe được</small></li>
+      <li class="stage" id="stage-write"><strong>4. Viết</strong><small>Gõ từ theo nghĩa</small></li>
+    </ol>
+    <div class="progress-caption muted small">
+      <span id="progress-label">Tiến độ buổi học</span>
+      <span id="progress-count"></span>
+    </div>
+    <progress id="progress" aria-labelledby="progress-label"></progress>
+
+    <div class="transition" id="transition" role="status" hidden>
+      <p id="last-reading-result"></p>
+      <p>Đã xong phần Đọc. Bấm phát âm rồi gõ từ tiếng Anh bạn nghe được.</p>
+    </div>
+
+    <section class="panel" id="exercise" aria-labelledby="exercise-title">
+      <div class="exercise-head">
+        <h2 id="exercise-title" tabindex="-1"></h2>
+        <span class="muted small" id="question-number"></span>
+      </div>
+      <p class="muted small" id="phase-remaining"></p>
+      <div class="prompt" id="prompt">
+        <p class="eyebrow" id="prompt-label"></p>
+        <div class="term" id="term"></div>
+        <p class="ipa" id="term-ipa" lang="en" hidden></p>
+        <p class="model-meaning" id="model-meaning" lang="vi" hidden></p>
+        <div class="audio-controls" id="audio-controls" hidden>
+          <button class="btn" type="button" id="play-audio">Nghe phát âm</button>
+          <p class="small muted" id="audio-status" role="status"></p>
+        </div>
+      </div>
+
+      <div class="choices" id="choices" role="group" aria-labelledby="exercise-title"></div>
+      <div class="actions listen-actions" id="listen-actions" hidden>
+        <button class="btn" type="button" id="skip-listening">Bỏ qua phần Nghe →</button>
+      </div>
+      <form id="writing-form" hidden>
+        <label for="answer" id="answer-label">Từ tiếng Anh tương ứng</label>
+        <input id="answer" lang="en" aria-describedby="term" required maxlength="100" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Gõ câu trả lời">
+        <p class="feedback small" id="letter-hint" role="status" hidden>Gợi ý chữ cái <span class="hint-pattern" id="hint-pattern" lang="en"></span></p>
+        <div class="actions">
+          <button class="btn" type="button" id="hint" aria-controls="letter-hint">Gợi ý</button>
+          <button class="btn" type="button" id="reveal">Xem đáp án</button>
+          <button class="btn primary" id="check-answer" type="submit">Kiểm tra</button>
+        </div>
+      </form>
+      <div class="feedback" id="feedback" role="status" hidden>
+        <p id="feedback-text"></p>
+        <p class="ipa" id="feedback-ipa" lang="en" hidden></p>
+        <p class="small" id="feedback-example" lang="en" hidden></p>
+      </div>
+      <section class="feedback" id="self-assessment" aria-labelledby="assessment-question" hidden>
+        <p><strong id="assessment-question">Bạn có thể tự nhớ lại từ này không?</strong></p>
+        <p class="small" id="assessment-detail"></p>
+        <div class="actions">
+          <button class="btn" type="button" id="assess-down" aria-describedby="assessment-question assessment-detail">Mình cần ôn thêm</button>
+          <button class="btn primary" type="button" id="assess-up" aria-describedby="assessment-question assessment-detail">Mình nhớ được</button>
+        </div>
+      </section>
+      <div class="actions" id="next-actions" hidden>
+        <button class="btn primary" type="button" id="next">Câu tiếp theo →</button>
+      </div>
+    </section>
+
+    <section class="panel" id="summary" aria-labelledby="summary-title" hidden>
+      <h2 id="summary-title" tabindex="-1">Hoàn thành buổi học!</h2>
+      <p class="done-copy muted" id="summary-copy"></p>
+      <p class="done-copy" id="summary-remaining"></p>
+      <div class="scores">
+        <div class="score">Nghe đúng<strong id="listen-score"></strong></div>
+        <div class="score">Đọc đúng<strong id="read-score"></strong></div>
+        <div class="score">Viết đúng<strong id="write-score"></strong></div>
+      </div>
+      <div class="actions">
+        <button class="btn" type="button" id="summary-home">Về trang chủ</button>
+        <button class="btn primary" type="button" id="next-lesson">Học lượt tiếp theo →</button>
+      </div>
+    </section>
+    </section>
+  </main>
+
+  <dialog class="import-dialog" id="import-dialog" aria-labelledby="import-title">
+    <form id="import-form">
+      <h2 id="import-title">Thêm từ vào bộ từ</h2>
+      <div class="import-field">
+        <label for="import-deck">Thêm vào bộ từ</label>
+        <select id="import-deck" autofocus required></select>
+      </div>
+      <div class="import-field" id="new-deck-field" hidden>
+        <label for="new-deck-name">Tên bộ từ mới</label>
+        <input id="new-deck-name" maxlength="60" disabled>
+      </div>
+      <div class="import-field">
+        <label for="import-mode">Cách nhập</label>
+        <select id="import-mode">
+          <option value="single">Thêm từng từ</option>
+          <option value="bulk">Dán cả danh sách</option>
+        </select>
+      </div>
+      <fieldset class="import-fields" id="single-fields">
+        <div class="import-field"><label for="new-word">Từ tiếng Anh</label><input id="new-word" lang="en" maxlength="100" required></div>
+        <div class="import-field"><label for="new-meaning">Nghĩa tiếng Việt</label><input id="new-meaning" maxlength="180" required></div>
+        <div class="import-field"><label for="new-ipa">Phiên âm IPA (tùy chọn)</label><input id="new-ipa" maxlength="100" placeholder="/ˈhæbɪt/"></div>
+        <div class="import-field"><label for="new-example">Ví dụ tiếng Anh (tùy chọn)</label><input id="new-example" lang="en" maxlength="320"></div>
+      </fieldset>
+      <fieldset class="import-fields" id="bulk-fields" hidden disabled>
+        <div class="import-field">
+          <label for="bulk-words">Danh sách từ</label>
+          <p class="muted small" id="bulk-help">Sao chép 2 đến 4 cột theo thứ tự từ tiếng Anh, nghĩa tiếng Việt, ví dụ, phiên âm IPA. Hai cột cuối là tùy chọn. Để trống cột ví dụ nếu chỉ thêm IPA. Dán trực tiếp vào ô bên dưới.</p>
+          <textarea id="bulk-words" aria-describedby="bulk-help" required placeholder="curious&#9;tò mò&#9;I’m curious about it."></textarea>
+        </div>
+      </fieldset>
+      <p class="muted small" id="import-feedback" role="status"></p>
+      <ul class="import-preview" id="import-preview" hidden aria-label="Xem trước kết quả nhập"></ul>
+      <div class="actions">
+        <button class="btn" id="close-import" type="button">Hủy</button>
+        <button class="btn" id="preview-import" type="button" hidden>Xem trước</button>
+        <button class="btn primary" id="save-import" type="submit">Lưu từ</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <script>
+    const sampleDeck = { id: 'sample', name: 'Bộ từ mẫu' };
+    const sampleVocabulary = [
+      { word: 'habit', ipa: '/ˈhæbɪt/', meaning: 'thói quen', example: 'Reading before bed is a good habit.' },
+      { word: 'improve', ipa: '/ɪmˈpruːv/', meaning: 'cải thiện', example: 'I practice every day to improve my English.' },
+      { word: 'confident', ipa: '/ˈkɑːnfɪdənt/', meaning: 'tự tin', example: 'I feel more confident when I speak slowly.' },
+      { word: 'remind', ipa: '/rɪˈmaɪnd/', meaning: 'nhắc nhở', example: 'Please remind me to call Anna.' },
+      { word: 'challenge', ipa: '/ˈtʃælɪndʒ/', meaning: 'thử thách', example: 'Learning a new language is a fun challenge.' },
+      { word: 'commute', ipa: '/kəˈmjuːt/', meaning: 'đi lại giữa nhà và nơi làm việc', example: 'I commute to work by bus.' },
+      { word: 'appointment', ipa: '/əˈpɔɪntmənt/', meaning: 'cuộc hẹn', example: 'I have a dentist appointment on Monday.' },
+      { word: 'prepare', ipa: '/prɪˈper/', meaning: 'chuẩn bị', example: 'I prepare lunch before work.' },
+      { word: 'borrow', ipa: '/ˈbɑːroʊ/', meaning: 'mượn', example: 'Can I borrow your pen?' },
+      { word: 'afford', ipa: '/əˈfɔːrd/', meaning: 'có đủ tiền để mua hoặc chi trả', example: 'We can afford to buy a new bike.' },
+      { word: 'suggest', ipa: '/səˈdʒest/', meaning: 'đề xuất', example: 'I suggest taking the earlier train.' },
+      { word: 'explain', ipa: '/ɪkˈspleɪn/', meaning: 'giải thích', example: 'Could you explain this rule to me?' },
+      { word: 'agree', ipa: '/əˈɡriː/', meaning: 'đồng ý', example: 'I agree with your plan.' },
+      { word: 'apologize', ipa: '/əˈpɑːlədʒaɪz/', meaning: 'xin lỗi', example: 'I want to apologize for being late.' },
+      { word: 'invite', ipa: '/ɪnˈvaɪt/', meaning: 'mời', example: 'Let’s invite Mai to dinner.' },
+      { word: 'deadline', ipa: '/ˈdedlaɪn/', meaning: 'hạn chót', example: 'The deadline for this project is Friday.' },
+      { word: 'focus', ipa: '/ˈfoʊkəs/', meaning: 'tập trung', example: 'I need to focus on this task.' },
+      { word: 'review', ipa: '/rɪˈvjuː/', meaning: 'xem lại, ôn lại', example: 'I review my notes after class.' },
+      { word: 'progress', ipa: '/ˈprɑːɡres/', meaning: 'sự tiến bộ', example: 'You have made a lot of progress.' },
+      { word: 'achieve', ipa: '/əˈtʃiːv/', meaning: 'đạt được', example: 'Small steps can help you achieve your goals.' }
+    ].map((entry) => ({ ...entry, deckId: sampleDeck.id }));
+    const wordsPerLesson = 5;
+    const minuteMs = 60 * 1000;
+    const hourMs = 60 * minuteMs;
+    const dayMs = 24 * hourMs;
+    const reviewIntervals = [2 * hourMs, dayMs, 2 * dayMs, 3 * dayMs, 5 * dayMs, 8 * dayMs];
+    const levelColors = ['#eb695d', '#e58a41', '#d8ab32', '#85b94a', '#30a879', '#7770e3'];
+    const progressKey = 'so-tu-spaced-repetition-v1';
+    const libraryKey = 'so-tu-word-library-v1';
+    const themeKey = 'so-tu-theme-v1';
+    const stages = ['learn', 'read', 'listen', 'write'];
+    const choiceKeys = ['W', 'E', 'S', 'D'];
+    const readingRounds = [
+      { direction: 'Anh → Việt', promptKey: 'word', promptLang: 'en', promptLabel: 'Từ tiếng Anh', choiceKey: 'meaning', choiceLang: 'vi' },
+      { direction: 'Việt → Anh', promptKey: 'meaning', promptLang: 'vi', promptLabel: 'Nghĩa tiếng Việt', choiceKey: 'word', choiceLang: 'en' }
+    ];
+    const byId = (id) => document.getElementById(id);
+    const choices = byId('choices');
+    const playAudio = byId('play-audio');
+    const speaker = window.speechSynthesis;
+    let activeUtterance = null;
+    const form = byId('writing-form');
+    const answer = byId('answer');
+    const next = byId('next');
+    const transition = byId('transition');
+    const feedback = byId('feedback');
+    const exerciseTitle = byId('exercise-title');
+    const home = byId('home');
+    const lesson = byId('lesson');
+    const settings = byId('settings');
+    const cloudValues = new Map();
+    let library = loadLibrary();
+    let vocabulary = libraryWords(library);
+    const records = loadRecords();
+    const mistakes = new Map();
+    const practiceNeeded = new Set();
+    let practicing = false;
+    let practiceWritingRound = 0;
+    let lessonWordCount = 0;
+    const listeningReveals = new Set();
+    const lessonDelays = new Map();
+    const assessment = byId('self-assessment');
+    const hintButton = byId('hint');
+    let words = [];
+    let reviewing = false;
+    let phase = 'learn';
+    let index = 0;
+    let listenScore = 0;
+    let listenedCount = 0;
+    let readScore = 0;
+    let readingRound = 0;
+    let writeScore = 0;
+    let completed = 0;
+    let answered = false;
+    let hintCount = 0;
+
+    function loadValue(key) {
+      if (key === libraryKey || key === progressKey) return cloudValues.get(key) || null;
+      try {
+        return localStorage.getItem(key);
+      } catch {
+        byId('storage-notice').hidden = false;
+        return null;
+      }
+    }
+
+    function saveValue(key, value) {
+      if (key === libraryKey || key === progressKey) {
+        cloudValues.set(key, value);
+        window.soTu.onChange?.();
+        return true;
+      }
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch {
+        byId('storage-notice').hidden = false;
+        return false;
+      }
+    }
+
+
+    function loadLibrary() {
+      const empty = { decks: [], entries: [] };
+      const raw = loadValue(libraryKey);
+      if (!raw) return empty;
+      try {
+        const saved = JSON.parse(raw);
+        if (!Array.isArray(saved.decks) || !Array.isArray(saved.entries)) return empty;
+        const decks = saved.decks.filter((deck) => typeof deck?.id === 'string' && deck.id.startsWith('user:') &&
+          typeof deck.name === 'string' && deck.name.trim());
+        const sampleRemoved = saved.sampleRemoved === true;
+        const state = { decks, sampleRemoved };
+        const ids = new Set(availableDecks(state).map((deck) => deck.id));
+        const seen = new Set(sampleRemoved ? [] : sampleVocabulary.map((entry) => wordKey(entry.word)));
+        const entries = saved.entries.filter((entry) => {
+          if (typeof entry?.word !== 'string' || !entry.word.trim() || typeof entry.meaning !== 'string' ||
+              !entry.meaning.trim() || typeof entry.example !== 'string' || !ids.has(entry.deckId)) return false;
+          const key = wordKey(entry.word);
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        return { decks, entries, sampleRemoved };
+      } catch {
+        const notice = byId('storage-notice');
+        notice.textContent = 'Không đọc được kho từ đã lưu.';
+        notice.hidden = false;
+        return empty;
+      }
+    }
+
+    function wordKey(value) {
+      return value.normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase();
+    }
+
+    function availableDecks(state) {
+      return state.sampleRemoved ? state.decks : [sampleDeck, ...state.decks];
+    }
+
+    function libraryWords(state) {
+      return state.sampleRemoved ? [...state.entries] : [...sampleVocabulary, ...state.entries];
+    }
+
+    function deckWords() {
+      const selected = byId('deck-filter').value;
+      return selected ? vocabulary.filter((entry) => entry.deckId === selected) : vocabulary;
+    }
+
+    function renderDeckSelect(select, first, last) {
+      const selected = select.value;
+      const decks = [...(first ? [first] : []), ...availableDecks(library), ...(last ? [last] : [])];
+      select.replaceChildren(...decks.map((deck) => new Option(deck.name, deck.id)));
+      if (decks.some((deck) => deck.id === selected)) select.value = selected;
+    }
+
+    function parsePastedRows(text) {
+      const input = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+      const rows = [];
+      let row = [];
+      let field = '';
+      let quoted = false;
+      for (let i = 0; i < input.length; i++) {
+        const char = input[i];
+        if (quoted) {
+          if (char === '"' && input[i + 1] === '"') {
+            field += '"';
+            i++;
+          } else if (char === '"') {
+            quoted = false;
+          } else {
+            field += char;
+          }
+        } else if (char === '"' && field === '') {
+          quoted = true;
+        } else if (char === '\t' || char === '\n') {
+          row.push(field);
+          field = '';
+          if (char === '\n') {
+            rows.push(row);
+            row = [];
+          }
+        } else {
+          field += char;
+        }
+      }
+      if (quoted) throw new Error('Có ô chưa đóng dấu ngoặc kép. Hãy kiểm tra rồi dán lại.');
+      rows.push([...row, field]);
+      return rows.map((cells, i) => ({ cells, rowNumber: i + 1 })).filter(({ cells }) => cells.some((cell) => cell.trim()));
+    }
+
+    function collectEntries(rows, existingWords) {
+      const seen = new Set(existingWords.map((entry) => wordKey(entry.word)));
+      const accepted = [];
+      const results = [];
+      for (const { cells, rowNumber } of rows) {
+        const [word = '', meaning = '', example = '', ipa = ''] = cells.map((cell) => cell.trim());
+        const entry = { word: word.replace(/\s+/g, ' '), meaning, example, ipa };
+        const key = wordKey(word);
+        let problem = '';
+        if (cells.length < 2 || cells.length > 4) problem = 'Cần 2 đến 4 cột';
+        else if (!word || !meaning) problem = 'Thiếu từ tiếng Anh hoặc nghĩa';
+        else if (word.length > 100 || meaning.length > 180 || example.length > 320 || ipa.length > 100) problem = 'Nội dung quá dài';
+        else if (seen.has(key)) problem = 'Từ đã có trong kho hoặc trùng trong danh sách';
+        if (!problem) {
+          seen.add(key);
+          accepted.push(entry);
+        }
+        results.push({ entry, rowNumber, problem });
+      }
+      return { accepted, results };
+    }
+
+    function pastedRows() {
+      const rows = parsePastedRows(byId('bulk-words').value);
+      const headings = rows[0]?.cells || [];
+      if (['từ tiếng anh', 'english', 'word'].includes(wordKey(headings[0] || '')) &&
+          ['nghĩa tiếng việt', 'nghĩa', 'meaning', 'vietnamese'].includes(wordKey(headings[1] || ''))) rows.shift();
+      return rows;
+    }
+
+    function showImportPreview(rows, existingWords) {
+      const { accepted, results } = collectEntries(rows, existingWords);
+      const preview = byId('import-preview');
+      preview.replaceChildren(...results.map(({ entry, rowNumber, problem }) => {
+        const item = document.createElement('li');
+        const prefix = 'Dòng ' + rowNumber + ' · ';
+        item.textContent = problem ? prefix + (entry.word ? entry.word + ' · ' : '') + problem :
+          prefix + entry.word + ' — ' + entry.meaning + (entry.ipa ? ' · ' + entry.ipa : '') + (entry.example ? ' · ' + entry.example : '');
+        return item;
+      }));
+      preview.hidden = results.length === 0;
+      byId('import-feedback').textContent = results.length
+        ? accepted.length + ' từ có thể thêm · ' + (results.length - accepted.length) + ' dòng sẽ bỏ qua.'
+        : 'Chưa có dòng từ vựng nào để thêm.';
+      byId('save-import').disabled = accepted.length === 0;
+      return accepted;
+    }
+
+    function syncImportForm() {
+      const bulk = byId('import-mode').value === 'bulk';
+      const creating = byId('import-deck').value === 'create';
+      byId('single-fields').hidden = bulk;
+      byId('single-fields').disabled = bulk;
+      byId('bulk-fields').hidden = !bulk;
+      byId('bulk-fields').disabled = !bulk;
+      byId('new-deck-field').hidden = !creating;
+      byId('new-deck-name').disabled = !creating;
+      byId('new-deck-name').required = creating;
+      byId('preview-import').hidden = !bulk;
+      byId('save-import').disabled = bulk;
+      byId('import-preview').hidden = true;
+      byId('import-feedback').textContent = '';
+    }
+
+    function openImport() {
+      byId('import-form').reset();
+      renderDeckSelect(byId('import-deck'), null, { id: 'create', name: '+ Tạo bộ từ mới' });
+      byId('import-deck').value = byId('deck-filter').value || availableDecks(library)[0]?.id || 'create';
+      syncImportForm();
+      byId('import-dialog').showModal();
+    }
+
+    function saveImport(event) {
+      event.preventDefault();
+      const status = byId('import-feedback');
+      const latest = loadLibrary();
+      const allWords = libraryWords(latest);
+      const decks = availableDecks(latest);
+      let deck = decks.find((item) => item.id === byId('import-deck').value);
+      let created = false;
+      if (byId('import-deck').value === 'create') {
+        const name = byId('new-deck-name').value.trim().replace(/\s+/g, ' ');
+        if (!name || decks.some((item) => wordKey(item.name) === wordKey(name))) {
+          status.textContent = name ? 'Tên bộ từ đã có. Hãy chọn bộ đó hoặc nhập tên khác.' : 'Hãy nhập tên bộ từ mới.';
+          byId('new-deck-name').focus();
+          return;
+        }
+        deck = { id: 'user:' + wordKey(name), name };
+        created = true;
+      }
+      if (!deck) {
+        status.textContent = 'Hãy chọn lại bộ từ.';
+        return;
+      }
+
+      let entries;
+      if (byId('import-mode').value === 'bulk') {
+        if (byId('save-import').disabled) return;
+        try {
+          entries = showImportPreview(pastedRows(), allWords);
+        } catch (error) {
+          status.textContent = error.message;
+          return;
+        }
+      } else {
+        const cells = ['new-word', 'new-meaning', 'new-example', 'new-ipa'].map((id) => byId(id).value);
+        const result = collectEntries([{ cells, rowNumber: 1 }], allWords);
+        entries = result.accepted;
+        if (!entries.length) status.textContent = result.results[0].problem + '.';
+      }
+      if (!entries.length) return;
+
+      const updated = {
+        ...latest,
+        decks: created ? [...latest.decks, deck] : latest.decks,
+        entries: [...latest.entries, ...entries.map((entry) => ({ ...entry, deckId: deck.id }))]
+      };
+      if (!saveValue(libraryKey, JSON.stringify(updated))) {
+        status.textContent = 'Chưa lưu được từ. Danh sách vẫn còn trong ô nhập để bạn có thể sao chép lại.';
+        return;
+      }
+      library = updated;
+      vocabulary = libraryWords(library);
+      renderDeckSelect(byId('deck-filter'), { id: '', name: 'Tất cả bộ từ' });
+      byId('deck-filter').value = deck.id;
+      byId('import-dialog').close();
+      const result = byId('import-result');
+      result.textContent = 'Đã thêm ' + entries.length + ' từ vào bộ “' + deck.name + '”.';
+      result.hidden = false;
+      renderHome();
+    }
+
+    function deleteSelectedDeck() {
+      const deckId = byId('deck-filter').value;
+      if (!deckId) return;
+      const latest = loadLibrary();
+      const deck = availableDecks(latest).find((item) => item.id === deckId);
+      if (!deck) return;
+      const removed = libraryWords(latest).filter((entry) => entry.deckId === deckId);
+      if (!window.confirm('Xóa bộ “' + deck.name + '” cùng ' + removed.length + ' từ và tiến độ của bộ này?')) return;
+
+      const updated = {
+        sampleRemoved: latest.sampleRemoved || deckId === sampleDeck.id,
+        decks: latest.decks.filter((item) => item.id !== deckId),
+        entries: latest.entries.filter((entry) => entry.deckId !== deckId)
+      };
+      const result = byId('import-result');
+      result.hidden = false;
+      if (!saveValue(libraryKey, JSON.stringify(updated))) {
+        result.textContent = 'Chưa xóa được bộ từ. Hãy thử lại.';
+        return;
+      }
+
+      library = updated;
+      vocabulary = libraryWords(library);
+      const progress = loadRecords();
+      for (const word of Object.keys(records)) delete records[word];
+      Object.assign(records, progress);
+      const progressSaved = saveValue(progressKey, JSON.stringify(progress));
+      const filter = byId('deck-filter');
+      renderDeckSelect(filter, { id: '', name: 'Tất cả bộ từ' });
+      filter.value = '';
+      result.textContent = 'Đã xóa bộ “' + deck.name + '”.' +
+        (progressSaved ? '' : ' Trình duyệt chưa lưu được thay đổi tiến độ.');
+      renderHome();
+      filter.focus();
+    }
+
+    function loadRecords() {
+      const saved = loadValue(progressKey);
+      const valid = Object.create(null);
+      if (!saved) return valid;
+      try {
+        const data = JSON.parse(saved);
+        for (const entry of vocabulary) {
+          const record = data?.[entry.word];
+          if (!Number.isInteger(record?.level) || record.level < 1 || record.level > reviewIntervals.length) continue;
+          let due = record.due;
+          if (typeof due === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(due)) {
+            // Older versions stored only a local calendar date.
+            due = new Date(due + 'T00:00:00').getTime();
+          }
+          if (Number.isSafeInteger(due) && due > 0) {
+            valid[entry.word] = { level: record.level, due };
+          }
+        }
+      } catch {
+        const notice = byId('storage-notice');
+        notice.textContent = 'Không đọc được lịch ôn đã lưu. Sổ từ sẽ bắt đầu với lịch mới.';
+        notice.hidden = false;
+      }
+      return valid;
+    }
+
+    function formatRemaining(milliseconds) {
+      const minutes = Math.ceil(milliseconds / minuteMs);
+      const days = Math.floor(minutes / (24 * 60));
+      const hours = Math.floor(minutes / 60) % 24;
+      const rest = minutes % 60;
+      const parts = [];
+      if (days) parts.push(days + ' ngày');
+      if (hours) parts.push(hours + ' giờ');
+      if (hours || rest || !days) {
+        parts.push((hours ? String(rest).padStart(2, '0') : rest) + ' phút');
+      }
+      return parts.join(' ');
+    }
+
+    function todayQueue(now = Date.now()) {
+      const selected = deckWords();
+      const fresh = [];
+      const learned = [];
+      for (const entry of selected) {
+        if (records[entry.word]?.level >= 1) learned.push(entry);
+        else fresh.push(entry);
+      }
+      const due = learned.filter((entry) => records[entry.word].due <= now);
+      due.sort((a, b) => records[a.word].due - records[b.word].due);
+      return { fresh, learned, due };
+    }
+
+    function reviewDueAt(now, interval) {
+      if (interval < dayMs) return now + interval;
+      const date = new Date(now);
+      date.setHours(0, 0, 0, 0);
+      date.setDate(date.getDate() + interval / dayMs);
+      return date.getTime();
+    }
+
+    function scheduleReview(entry, adjustment) {
+      const previous = records[entry.word]?.level || 0;
+      const level = Math.min(reviewIntervals.length, Math.max(1, previous + adjustment));
+      const interval = adjustment > 0 ? reviewIntervals[level - 1] : reviewIntervals[0];
+      const now = Date.now();
+      const due = reviewDueAt(now, interval);
+      records[entry.word] = { level, due };
+      lessonDelays.set(entry.word, interval);
+      // Use the latest completed word as the shared finish time for this round.
+      for (const [word, interval] of lessonDelays) records[word].due = reviewDueAt(now, interval);
+      saveValue(progressKey, JSON.stringify(records));
+      return { previous, level, delay: due - now };
+    }
+
+    function renderToday() {
+      const now = Date.now();
+      const { fresh, learned, due } = todayQueue(now);
+      byId('today-count').textContent = due.length;
+      byId('today-detail').textContent = 'Đã học ' + learned.length + '/' + (learned.length + fresh.length) + ' từ';
+      byId('start-today').hidden = due.length === 0;
+      const startNew = byId('start-new');
+      startNew.hidden = fresh.length === 0;
+      startNew.classList.toggle('primary', due.length === 0);
+      const future = learned.map((entry) => records[entry.word].due).filter((time) => time > now);
+      const upcoming = Math.min(...future);
+      const nextReview = byId('next-review');
+      nextReview.hidden = future.length === 0;
+      if (future.length) {
+        const count = future.filter((time) => time === upcoming).length;
+        const message = count + ' từ cần học sau ' + formatRemaining(upcoming - now) + ' nữa';
+        if (nextReview.textContent !== message) nextReview.textContent = message;
+      }
+      return learned;
+    }
+
+    function renderHome() {
+      byId('delete-deck').hidden = !byId('deck-filter').value;
+      const learned = renderToday();
+      const counts = reviewIntervals.map(() => 0);
+      for (const entry of learned) counts[records[entry.word].level - 1]++;
+      const peak = Math.max(1, ...counts);
+      const chart = byId('level-chart');
+      chart.replaceChildren();
+      counts.forEach((count, i) => {
+        const item = document.createElement('li');
+        const plot = document.createElement('div');
+        const number = document.createElement('strong');
+        const bar = document.createElement('span');
+        const label = document.createElement('span');
+        plot.className = 'chart-plot';
+        number.textContent = count;
+        bar.className = 'chart-bar';
+        bar.style.backgroundColor = levelColors[i];
+        bar.style.height = (count / peak * 87) + 'px';
+        label.textContent = i === counts.length - 1 ? 'Nhớ sâu' : 'LV' + (i + 1);
+        plot.append(number, bar);
+        item.append(plot, label);
+        chart.append(item);
+      });
+    }
+
+    function showHome() {
+      stopPronunciation();
+      lesson.hidden = true;
+      home.hidden = false;
+      renderHome();
+      byId('home-title').focus();
+    }
+
+    function shuffle(entries) {
+      const shuffled = [...entries];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    function renderProgress() {
+      const base = lessonWordCount * (stages.length - 1 + readingRounds.length - Number(reviewing));
+      const total = base + practiceNeeded.size * (readingRounds.length + 2);
+      byId('progress').max = total;
+      byId('progress').value = completed;
+      byId('progress-count').textContent = completed + '/' + total + ' mục';
+    }
+
+    function setStage() {
+      for (const step of stages) {
+        const badge = byId('stage-' + step);
+        if (phase === step) badge.setAttribute('aria-current', 'step');
+        else badge.removeAttribute('aria-current');
+      }
+    }
+
+    function showFeedback(message, tone, example = '', ipa = '') {
+      byId('feedback-ipa').textContent = ipa;
+      byId('feedback-ipa').hidden = !ipa;
+      byId('feedback-text').textContent = message;
+      byId('feedback-example').textContent = example;
+      byId('feedback-example').hidden = !example;
+      feedback.dataset.tone = tone;
+      feedback.hidden = false;
+    }
+
+    function renderPhaseRemaining() {
+      const remaining = words.length - index - Number(answered);
+      byId('phase-remaining').textContent = remaining ? 'Còn ' + remaining + ' từ trong lượt này' : 'Đã hoàn thành lượt này';
+    }
+
+    function completeQuestion() {
+      answered = true;
+      completed++;
+      renderProgress();
+      renderPhaseRemaining();
+    }
+
+    function stopPronunciation() {
+      if (!activeUtterance) return;
+      activeUtterance = null;
+      speaker.cancel();
+    }
+
+    function speakWord(word, callbacks = {}) {
+      stopPronunciation();
+      const voices = speaker?.getVoices().filter((voice) => voice.localService && /^en(?:-|$)/i.test(voice.lang)) || [];
+      const voice = voices.find((item) => item.lang.toLowerCase() === 'en-us') || voices[0];
+      if (!voice || typeof SpeechSynthesisUtterance !== 'function') return false;
+
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+      utterance.rate = 0.85;
+      utterance.onstart = () => {
+        if (activeUtterance === utterance) callbacks.start?.();
+      };
+      utterance.onend = () => {
+        if (activeUtterance !== utterance) return;
+        activeUtterance = null;
+        callbacks.end?.();
+      };
+      utterance.onerror = () => {
+        if (activeUtterance !== utterance) return;
+        activeUtterance = null;
+        callbacks.error?.();
+      };
+      activeUtterance = utterance;
+      speaker.speak(utterance);
+      return true;
+    }
+
+    function playPronunciation() {
+      const listening = phase === 'listen';
+      if (phase !== 'learn' && (!listening || answered)) return;
+      const status = byId('audio-status');
+      status.textContent = 'Đang phát âm…';
+
+      function enableAnswer() {
+        if (!listening) return;
+        answer.disabled = false;
+        byId('check-answer').disabled = false;
+        byId('reveal').disabled = false;
+        if (document.activeElement === playAudio || document.activeElement === document.body) answer.focus();
+      }
+
+      const started = speakWord(words[index].word, {
+        start: enableAnswer,
+        end: () => {
+          enableAnswer();
+          status.textContent = listening ? 'Gõ từ tiếng Anh vừa nghe. Bấm Shift trái để nghe lại.' : '';
+        },
+        error: () => {
+          status.textContent = 'Chưa phát được âm thanh. Hãy thử lại.';
+        }
+      });
+
+      if (!started) {
+        status.textContent = listening
+          ? 'Trình duyệt chưa có giọng tiếng Anh ngoại tuyến. Bạn có thể bỏ qua phần Nghe.'
+          : 'Trình duyệt chưa có giọng tiếng Anh ngoại tuyến.';
+      }
+    }
+
+    function beginPhase(nextPhase) {
+      phase = nextPhase;
+      index = 0;
+      setStage();
+      showCurrentQuestion();
+    }
+
+    function showCurrentQuestion() {
+      renderQuestion();
+      if (phase === 'listen') {
+        playAudio.focus();
+        playPronunciation();
+      } else if (phase === 'read') {
+        exerciseTitle.focus();
+      } else {
+        answer.focus();
+      }
+      const exercise = byId('exercise');
+      const bounds = exercise.getBoundingClientRect();
+      if (bounds.bottom > window.innerHeight || bounds.top < 0) {
+        exercise.scrollIntoView({ block: bounds.height <= window.innerHeight ? 'nearest' : 'start' });
+      }
+    }
+
+    function renderChoices(entry) {
+      const round = readingRounds[readingRound];
+      const meanings = new Set([wordKey(entry.meaning)]);
+      const distractors = [];
+      for (const option of shuffle(vocabulary)) {
+        const meaning = wordKey(option.meaning);
+        if (meanings.has(meaning)) continue;
+        meanings.add(meaning);
+        distractors.push(option);
+        if (distractors.length === 3) break;
+      }
+      const options = shuffle([entry, ...distractors]);
+      choices.replaceChildren();
+      options.forEach((option, i) => {
+        const button = document.createElement('button');
+        const key = document.createElement('span');
+        const label = document.createElement('span');
+        button.type = 'button';
+        button.className = 'btn choice';
+        key.className = 'choice-key';
+        key.textContent = choiceKeys[i];
+        button.setAttribute('aria-keyshortcuts', choiceKeys[i]);
+        key.setAttribute('aria-hidden', 'true');
+        label.lang = round.choiceLang;
+        label.textContent = option[round.choiceKey];
+        button.append(key, label);
+        button.addEventListener('click', () => checkChoice(entry, option, button));
+        choices.append(button);
+      });
+    }
+
+    function renderQuestion() {
+      stopPronunciation();
+      const learning = phase === 'learn';
+      const listening = phase === 'listen';
+      const reading = phase === 'read';
+      const entry = words[index];
+      answered = false;
+      hintCount = 0;
+      renderPhaseRemaining();
+      const round = reading ? readingRounds[readingRound] : null;
+      const titles = { learn: 'Gõ theo từ mẫu', listen: 'Nghe và gõ từ', write: 'Viết từ tiếng Anh' };
+      const title = round ? 'Đọc ' + (readingRound + 1) + '/' + readingRounds.length + ' · ' + round.direction : titles[phase];
+      exerciseTitle.textContent = practicing ? 'Luyện thêm · ' + (reading ? title : 'Viết ' + (practiceWritingRound + 1) + '/2') : title;
+      byId('question-number').textContent = (learning ? 'Từ ' : 'Câu ') + (index + 1) + '/' + words.length;
+      byId('prompt').dataset.phase = phase;
+      const promptLabel = phase === 'write' ? 'Nghĩa tiếng Việt' : 'Từ tiếng Anh';
+      byId('prompt-label').textContent = round?.promptLabel || promptLabel;
+      const term = byId('term');
+      term.hidden = listening;
+      term.textContent = listening ? '' : entry[round?.promptKey || (phase === 'write' ? 'meaning' : 'word')];
+      term.lang = round?.promptLang || (phase === 'write' ? 'vi' : 'en');
+      const termIpa = byId('term-ipa');
+      termIpa.textContent = !listening && term.lang === 'en' ? entry.ipa || '' : '';
+      termIpa.hidden = !termIpa.textContent;
+      const modelMeaning = byId('model-meaning');
+      modelMeaning.textContent = learning ? entry.meaning : '';
+      modelMeaning.hidden = !learning;
+      byId('audio-controls').hidden = !learning && !listening;
+      byId('audio-status').textContent = listening ? 'Bấm Shift trái để nghe lại.' : '';
+      byId('listen-actions').hidden = !listening;
+      choices.hidden = !reading;
+      form.hidden = reading;
+      answer.disabled = listening;
+      byId('check-answer').disabled = listening;
+      byId('reveal').disabled = listening;
+      byId('reveal').hidden = learning;
+      hintButton.hidden = phase !== 'write';
+      hintButton.disabled = entry.word.length < 2;
+      byId('letter-hint').hidden = true;
+      assessment.hidden = true;
+      byId('answer-label').textContent = { learn: 'Gõ lại từ tiếng Anh ở trên', listen: 'Gõ từ tiếng Anh bạn nghe được', write: 'Từ tiếng Anh tương ứng' }[phase] || 'Từ tiếng Anh';
+      answer.setAttribute('aria-describedby', learning ? 'term model-meaning' : listening ? 'audio-status' : 'term');
+      form.reset();
+      answer.setCustomValidity('');
+      feedback.hidden = true;
+      byId('next-actions').hidden = true;
+      const last = index === words.length - 1;
+      const nextLabel = learning ? 'Từ tiếp theo' : 'Câu tiếp theo';
+      const nextReadingRound = readingRounds[readingRound + 1];
+      const lastLabels = { learn: 'Sang phần Đọc', listen: 'Sang phần Viết', write: 'Xem kết quả' };
+      if (nextReadingRound) lastLabels.read = 'Sang phần ' + nextReadingRound.direction;
+      else if (practicing) lastLabels.read = 'Sang phần Viết';
+      if (practicing && practiceWritingRound === 0) lastLabels.write = 'Sang lượt Viết thứ hai';
+      if (!practicing && practiceNeeded.size) lastLabels.write = 'Luyện thêm';
+      next.textContent = ((last && lastLabels[phase]) || nextLabel) + ' →';
+      if (reading) renderChoices(entry);
+      else choices.replaceChildren();
+      const exercise = byId('exercise');
+      const longChoice = [...choices.children].some((button) => button.lastElementChild.textContent.length > 55);
+      exercise.toggleAttribute('data-compact', term.textContent.length > 45 || longChoice || window.innerHeight < 780);
+    }
+
+    function markForPractice(entry) {
+      if (reviewing) return;
+      queuePractice(entry);
+    }
+
+    function queuePractice(entry) {
+      if (practicing || practiceNeeded.has(entry.word)) return;
+      practiceNeeded.add(entry.word);
+      renderProgress();
+      if (phase === 'write' && index === words.length - 1) next.textContent = 'Luyện thêm →';
+    }
+
+    function countMistake(entry) {
+      mistakes.set(entry.word, (mistakes.get(entry.word) || 0) + 1);
+    }
+
+    function checkChoice(entry, option, selected) {
+      if (answered || selected.disabled) return;
+      const correct = option === entry;
+      if (correct) {
+        if (!practicing) readScore++;
+      } else {
+        markForPractice(entry);
+        if (!practicing) countMistake(entry);
+      }
+      completeQuestion();
+      const message = (correct ? 'Chính xác! ' : 'Chưa đúng. ') + entry.word + ' nghĩa là “' + entry.meaning + '”.';
+
+      if (!practicing && index === words.length - 1 && readingRound === readingRounds.length - 1) {
+        beginPhase('listen');
+        const lastResult = words.length === 1 ? (correct ? 'Bạn đã chọn đúng đáp án.' : 'Bạn chọn chưa đúng đáp án.') : message;
+        byId('last-reading-result').textContent = 'Câu Đọc cuối · ' + lastResult;
+        transition.hidden = false;
+        return;
+      }
+
+      for (const button of choices.children) {
+        button.disabled = true;
+        if (button.lastChild.textContent === entry[readingRounds[readingRound].choiceKey]) button.dataset.status = 'correct';
+      }
+      if (!correct) selected.dataset.status = 'wrong';
+      showFeedback(message, correct ? 'correct' : 'wrong', entry.example, entry.ipa);
+      speakWord(entry.word);
+      byId('next-actions').hidden = false;
+      next.focus();
+    }
+
+    function levelName(level) {
+      return level === reviewIntervals.length ? 'Nhớ sâu' : 'LV' + level;
+    }
+
+    function finishWriting(correct, adjustment = 0) {
+      if (answered) return;
+      const entry = words[index];
+      let message = 'Bạn đã gõ đúng từ mẫu.';
+      if (phase === 'listen') {
+        stopPronunciation();
+        listenedCount++;
+        if (correct) listenScore++;
+        byId('listen-actions').hidden = true;
+        byId('audio-controls').hidden = true;
+        message = (correct ? 'Bạn đã nghe và gõ đúng: ' : 'Đáp án là ') + entry.word + '.';
+      } else if (phase === 'write') {
+        message = (correct ? 'Chính xác! ' : 'Đáp án là ') + entry.word + '.';
+        if (practicing) {
+          if (reviewing && practiceWritingRound === 1) message += ' ' + reviewResult(entry, 1);
+        } else {
+          if (correct) writeScore++;
+          if (reviewing && practiceNeeded.has(entry.word)) {
+            message += ' Từ này sẽ lên cấp sau phần luyện thêm.';
+          } else {
+            message += ' ' + reviewResult(entry, adjustment);
+          }
+        }
+      }
+      completeQuestion();
+      form.hidden = true;
+      assessment.hidden = true;
+      if (phase === 'listen' && correct) {
+        advanceQuestion();
+        if (phase === 'listen') showFeedback(message, 'correct', '', entry.ipa);
+        return;
+      }
+      showFeedback(message, phase === 'listen' ? 'wrong' : 'correct', entry.example, entry.ipa);
+      if (phase !== 'listen') speakWord(entry.word);
+      byId('next-actions').hidden = false;
+      next.focus();
+    }
+
+    function reviewResult(entry, adjustment) {
+      const { previous, level, delay } = scheduleReview(entry, adjustment);
+      const name = levelName(level);
+      let result = 'Giữ ' + name;
+      if (!previous) result = 'Vào ' + name;
+      else if (level > previous) result = 'Lên ' + name;
+      else if (level < previous) result = 'Xuống ' + name;
+      return result + '. Ôn lại sau ' + formatRemaining(delay) + '.';
+    }
+
+    function isHighLevel(entry) {
+      return records[entry.word]?.level >= 4;
+    }
+
+    function checkWriting(entry) {
+      const errors = mistakes.get(entry.word) || 0;
+      const helpUsed = errors + hintCount;
+      const highLevel = isHighLevel(entry);
+      if (helpUsed >= 2 || listeningReveals.has(entry.word)) {
+        finishWriting(true, -1);
+      } else if (hintCount === 1 || (highLevel && errors === 1)) {
+        form.hidden = true;
+        feedback.hidden = true;
+        assessment.hidden = false;
+        const keep = byId('assess-down');
+        const promote = byId('assess-up');
+        if (highLevel) {
+          const atMaximum = records[entry.word].level === reviewIntervals.length;
+          keep.textContent = 'Giữ cấp, ôn sau 2 giờ';
+          promote.textContent = atMaximum ? 'Giữ Nhớ sâu, ôn sau 8 ngày' : 'Tăng cấp';
+          byId('assessment-detail').textContent = hintCount ? 'Bạn đã dùng một gợi ý cho từ này.' : 'Bạn đã trả lời sai một lần với từ này.';
+        } else {
+          keep.textContent = 'Mình cần ôn thêm';
+          promote.textContent = 'Mình nhớ được';
+          byId('assessment-detail').textContent = records[entry.word]
+            ? 'Bạn đã gõ đúng sau một gợi ý. Chọn “Mình nhớ được” để tăng cấp hoặc “Mình cần ôn thêm” để hạ cấp nếu còn cấp thấp hơn.'
+            : 'Bạn đã gõ đúng sau một gợi ý. Từ mới bắt đầu ở LV1 và được ôn lại sau 2 giờ.';
+        }
+        keep.focus();
+      } else {
+        if (reviewing && !highLevel && errors === 1) queuePractice(entry);
+        finishWriting(true, helpUsed === 0 ? 1 : 0);
+      }
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (form.hidden || answer.disabled || answered) return;
+      transition.hidden = true;
+      const entry = words[index];
+      const guess = wordKey(answer.value);
+      if (!guess) {
+        answer.setCustomValidity('Hãy gõ một từ tiếng Anh.');
+        answer.reportValidity();
+      } else if (guess === wordKey(entry.word)) {
+        if (phase === 'write' && !practicing) checkWriting(entry);
+        else finishWriting(true);
+      } else {
+        markForPractice(entry);
+        if (!practicing && (phase !== 'listen' || isHighLevel(entry))) countMistake(entry);
+        const message = {
+          learn: 'Chưa khớp. Hãy nhìn từ mẫu và gõ lại.',
+          listen: 'Chưa đúng. Hãy nghe lại rồi thử gõ hoặc xem đáp án.',
+          write: 'Chưa đúng. Bạn có thể thử lại, mở gợi ý hoặc xem đáp án.'
+        }[phase];
+        showFeedback(message, 'retry');
+        answer.focus();
+        answer.select();
+      }
+    });
+
+    answer.addEventListener('input', () => answer.setCustomValidity(''));
+    hintButton.addEventListener('click', () => {
+      if (phase !== 'write' || form.hidden || hintButton.disabled) return;
+      const entry = words[index];
+      markForPractice(entry);
+      const letters = Array.from(entry.word);
+      hintCount++;
+      const showLast = letters.length >= 4;
+      const visibleFromStart = Math.min(hintCount, letters.length - (showLast ? 2 : 1));
+      const pattern = letters.map((letter, i) => i < visibleFromStart || (showLast && i === letters.length - 1) ? letter : '•');
+      byId('hint-pattern').textContent = pattern.join(' ');
+      byId('letter-hint').hidden = false;
+      answer.setAttribute('aria-describedby', 'term letter-hint');
+      hintButton.disabled = visibleFromStart + Number(showLast) >= letters.length - 1;
+      answer.focus();
+    });
+    byId('reveal').addEventListener('click', () => {
+      if ((phase !== 'write' && phase !== 'listen') || form.hidden || answer.disabled) return;
+      transition.hidden = true;
+      const entry = words[index];
+      markForPractice(entry);
+      if (phase === 'listen' && isHighLevel(entry)) listeningReveals.add(entry.word);
+      finishWriting(false, -1);
+    });
+    byId('assess-down').addEventListener('click', () => {
+      if (!assessment.hidden) finishWriting(true, isHighLevel(words[index]) ? 0 : -1);
+    });
+    byId('assess-up').addEventListener('click', () => {
+      if (!assessment.hidden) finishWriting(true, 1);
+    });
+
+    playAudio.addEventListener('click', playPronunciation);
+    lesson.addEventListener('keydown', (event) => {
+      if (event.isComposing || event.altKey || event.metaKey || answered || lesson.hidden) return;
+      if (event.code === 'ShiftLeft' && phase === 'listen' && !event.ctrlKey) {
+        if (!event.repeat) playPronunciation();
+        return;
+      }
+      if (event.ctrlKey) return;
+      if (phase === 'read') {
+        const position = choiceKeys.findIndex((key) => event.code === 'Key' + key);
+        const choice = choices.children[position];
+        if (!choice || choice.disabled || event.target.closest('input, textarea, select, [contenteditable]')) return;
+        event.preventDefault();
+        if (!event.repeat) choice.click();
+        return;
+      }
+    });
+    byId('skip-listening').addEventListener('click', () => {
+      if (phase !== 'listen' || answered) return;
+      completed += words.length - index;
+      renderProgress();
+      transition.hidden = true;
+      beginPhase('write');
+    });
+
+    next.addEventListener('click', advanceQuestion);
+
+    function advanceQuestion() {
+      if (!answered) return;
+      if (phase === 'read' && index === words.length - 1 && readingRound + 1 < readingRounds.length) {
+        readingRound++;
+        beginPhase('read');
+        return;
+      }
+      if (practicing && phase === 'read' && index === words.length - 1) {
+        beginPhase('write');
+        return;
+      }
+      if ((phase === 'learn' || phase === 'listen') && index === words.length - 1) {
+        beginPhase(phase === 'learn' ? 'read' : 'write');
+        return;
+      }
+      if (phase === 'write' && index === words.length - 1) {
+        if (!practicing && practiceNeeded.size) {
+          practicing = true;
+          words = words.filter((entry) => practiceNeeded.has(entry.word));
+          readingRound = 0;
+          byId('lesson-title').textContent = 'Luyện thêm ' + words.length + ' từ';
+          byId('lesson-intro').textContent = 'Đọc hai chiều, sau đó viết mỗi từ hai lần.';
+          beginPhase('read');
+          return;
+        }
+        if (practicing && practiceWritingRound === 0) {
+          practiceWritingRound++;
+          beginPhase('write');
+          return;
+        }
+        byId('exercise').hidden = true;
+        byId('summary').hidden = false;
+        byId('stage-write').removeAttribute('aria-current');
+        byId('summary-copy').textContent = 'Đã cập nhật lịch ôn cho ' + lessonWordCount + ' từ.' +
+          (practicing ? ' Đã luyện thêm ' + words.length + ' từ.' : '');
+        byId('listen-score').textContent = listenedCount ? listenScore + '/' + listenedCount : 'Bỏ qua';
+        byId('read-score').textContent = readScore + '/' + (lessonWordCount * readingRounds.length);
+        byId('write-score').textContent = writeScore + '/' + lessonWordCount;
+        const { fresh, due } = todayQueue();
+        const remaining = fresh.length + due.length;
+        byId('summary-remaining').textContent = remaining
+          ? 'Còn ' + remaining + ' từ có thể học tiếp (' + due.length + ' từ đến hạn ôn, ' + fresh.length + ' từ mới).'
+          : 'Bạn đã học hết các từ có thể học lúc này.';
+        byId('next-lesson').hidden = remaining === 0;
+        byId('summary-title').focus();
+        return;
+      }
+      index++;
+      showCurrentQuestion();
+    }
+
+    function startLesson(mode = 'auto') {
+      const { fresh, due } = todayQueue();
+      reviewing = mode === 'review' || (mode === 'auto' && due.length > 0);
+      words = (reviewing ? due : fresh).slice(0, wordsPerLesson);
+      if (!words.length) {
+        showHome();
+        return;
+      }
+      home.hidden = true;
+      lesson.hidden = false;
+      byId('stage-learn').hidden = reviewing;
+      byId('lesson-stages').classList.toggle('review', reviewing);
+      byId('stage-read').querySelector('strong').textContent = reviewing ? '1. Đọc' : '2. Đọc';
+      byId('stage-listen').querySelector('strong').textContent = reviewing ? '2. Nghe' : '3. Nghe';
+      byId('stage-write').querySelector('strong').textContent = reviewing ? '3. Viết' : '4. Viết';
+      byId('session-kind').textContent = reviewing ? 'Ôn từ đến hạn' : 'Học từ mới';
+      byId('lesson-title').textContent = (reviewing ? 'Ôn ' : 'Học ') + words.length + ' từ';
+      byId('lesson-intro').textContent = reviewing ? 'Đọc hai chiều, gõ từ nghe được rồi viết từ theo nghĩa.' : 'Làm quen với từ, đọc hai chiều, gõ từ nghe được rồi viết từ theo nghĩa.';
+      listenScore = 0;
+      listenedCount = 0;
+      readScore = 0;
+      readingRound = 0;
+      writeScore = 0;
+      completed = 0;
+      lessonWordCount = words.length;
+      practicing = false;
+      practiceWritingRound = 0;
+      practiceNeeded.clear();
+      mistakes.clear();
+      listeningReveals.clear();
+      lessonDelays.clear();
+      transition.hidden = true;
+      byId('summary').hidden = true;
+      byId('exercise').hidden = false;
+      renderProgress();
+      beginPhase(reviewing ? 'read' : 'learn');
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      settings.querySelector('input[value="' + theme + '"]').checked = true;
+    }
+
+
+    renderDeckSelect(byId('deck-filter'), { id: '', name: 'Tất cả bộ từ' });
+    byId('deck-filter').addEventListener('change', () => {
+      byId('import-result').hidden = true;
+      renderHome();
+    });
+    byId('delete-deck').addEventListener('click', deleteSelectedDeck);
+    byId('open-import').addEventListener('click', openImport);
+    byId('close-import').addEventListener('click', () => byId('import-dialog').close());
+    byId('import-deck').addEventListener('change', syncImportForm);
+    byId('import-mode').addEventListener('change', syncImportForm);
+    byId('bulk-words').addEventListener('input', syncImportForm);
+    byId('preview-import').addEventListener('click', () => {
+      try {
+        const accepted = showImportPreview(pastedRows(), vocabulary);
+        if (accepted.length) byId('save-import').focus();
+      } catch (error) {
+        byId('import-feedback').textContent = error.message;
+      }
+    });
+    byId('import-form').addEventListener('submit', saveImport);
+
+    speaker?.getVoices();
+    applyTheme(loadValue(themeKey) === 'dark' ? 'dark' : 'light');
+    settings.addEventListener('change', (event) => {
+      applyTheme(event.target.value);
+      saveValue(themeKey, event.target.value);
+    });
+    document.addEventListener('click', (event) => {
+      if (settings.open && !settings.contains(event.target)) settings.open = false;
+    });
+    settings.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && settings.open) {
+        settings.open = false;
+        settings.querySelector('summary').focus();
+      }
+    });
+    byId('start-today').addEventListener('click', () => startLesson('review'));
+    byId('start-new').addEventListener('click', () => startLesson('new'));
+    byId('next-lesson').addEventListener('click', () => startLesson());
+    byId('back-home').addEventListener('click', showHome);
+    byId('summary-home').addEventListener('click', showHome);
+    window.addEventListener('focus', () => {
+      if (!home.hidden) renderToday();
+    });
+    window.setInterval(() => {
+      if (!home.hidden) renderToday();
+    }, 1000);
+    renderHome();
+    function exportStudyBackup() {
+      const payload = {
+        version: 1,
+        library: JSON.parse(loadValue(libraryKey) || '{"decks":[],"entries":[]}'),
+        progress: JSON.parse(loadValue(progressKey) || '{}')
+      };
+      const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'so-tu-sao-luu.json';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    byId('export-study').addEventListener('click', exportStudyBackup);
+    function validBackup(payload) {
+      const library = payload?.library;
+      const progress = payload?.progress;
+      return payload?.version === 1 && Array.isArray(library?.decks) && Array.isArray(library?.entries) &&
+        progress && typeof progress === 'object' && !Array.isArray(progress);
+    }
+
+    function snapshot() {
+      return {
+        version: 1,
+        library: JSON.parse(loadValue(libraryKey) || '{"decks":[],"entries":[]}'),
+        progress: JSON.parse(loadValue(progressKey) || '{}')
+      };
+    }
+
+    window.soTu = {
+      snapshot,
+      valid: validBackup,
+      atHome: () => !home.hidden && !byId('import-dialog').open,
+      onChange: null,
+      apply(payload) {
+        cloudValues.set(libraryKey, JSON.stringify(payload.library));
+        cloudValues.set(progressKey, JSON.stringify(payload.progress));
+        library = loadLibrary();
+        vocabulary = libraryWords(library);
+        const saved = loadRecords();
+        for (const word of Object.keys(records)) delete records[word];
+        Object.assign(records, saved);
+        renderDeckSelect(byId('deck-filter'), { id: '', name: 'Tất cả bộ từ' });
+        renderHome();
+      }
+    };
+  </script>
+  <script type="module" src="./sync.js"></script>
+</body>
+</html>
+
