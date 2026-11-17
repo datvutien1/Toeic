@@ -56,7 +56,9 @@
     .settings summary { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; list-style: none; }
     .settings summary::-webkit-details-marker { display: none; }
     .settings summary:hover, .settings[open] summary { background: var(--mint); }
-    .settings fieldset { position: absolute; z-index: 2; inset: auto 0 auto auto; width: max-content; margin: 7px 0 0; padding: 9px 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); }
+    .settings-menu { position: absolute; z-index: 2; inset: auto 0 auto auto; width: max-content; margin-top: 7px; padding: 9px 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); }
+    .settings fieldset { margin: 0 0 8px; padding: 0; border: 0; }
+    .sync-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .settings legend { padding: 0 4px; font-weight: 650; }
     .settings label { display: flex; gap: 7px; align-items: center; margin: 4px 0; font-weight: 400; }
     .settings input { width: auto; accent-color: var(--accent); }
@@ -157,21 +159,26 @@
     <div class="shell bar">
       <div class="brand"><span class="brand-icon" aria-hidden="true">Aa</span> Sổ từ</div>
       <details class="settings" id="settings">
-        <summary aria-label="Tùy chọn giao diện">
+        <summary aria-label="Cài đặt và đồng bộ">
           <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </summary>
-        <fieldset>
-          <legend>Giao diện</legend>
-          <label><input type="radio" name="theme" value="light" checked> Nền trắng</label>
-          <label><input type="radio" name="theme" value="dark"> Nền đen</label>
-        </fieldset>
-
+        <div class="settings-menu">
+          <fieldset>
+            <legend>Giao diện</legend>
+            <label><input type="radio" name="theme" value="light" checked> Nền trắng</label>
+            <label><input type="radio" name="theme" value="dark"> Nền đen</label>
+          </fieldset>
+          <button class="btn" type="button" id="open-sync" aria-haspopup="dialog" aria-controls="cloud-panel">Đồng bộ</button>
+        </div>
       </details>
     </div>
   </header>
 
-  <section class="shell panel" id="cloud-panel" aria-labelledby="cloud-title">
-    <h2 id="cloud-title">Đồng bộ Sổ từ</h2>
+  <dialog class="import-dialog" id="cloud-panel" aria-labelledby="cloud-title">
+    <div class="sync-heading">
+      <h2 id="cloud-title">Đồng bộ Sổ từ</h2>
+      <button class="btn" type="button" id="close-sync" autofocus>Đóng</button>
+    </div>
     <form id="cloud-login" hidden>
       <div class="import-field"><label for="cloud-email">Email Sổ từ</label><input id="cloud-email" type="email" autocomplete="username" required></div>
       <div class="import-field"><label for="cloud-password">Mật khẩu Sổ từ</label><input id="cloud-password" type="password" autocomplete="current-password" required></div>
@@ -185,7 +192,7 @@
       <button class="btn" type="button" id="cloud-logout">Đăng xuất</button>
     </div>
     <p id="cloud-status" role="status">Đang kết nối…</p>
-  </section>
+  </dialog>
   <main class="shell" inert>
     <p class="feedback small" id="storage-notice" role="status" hidden>Trình duyệt không lưu được dữ liệu trên máy. Các thay đổi chưa lưu sẽ mất khi tải lại trang.</p>
     <section id="home" aria-labelledby="home-title">
@@ -946,7 +953,7 @@
         start: enableAnswer,
         end: () => {
           enableAnswer();
-          status.textContent = listening ? 'Gõ từ tiếng Anh vừa nghe. Bấm Shift trái để nghe lại.' : '';
+          status.textContent = listening ? 'Gõ từ tiếng Anh vừa nghe. Bấm Shift để nghe lại.' : '';
         },
         error: () => {
           status.textContent = 'Chưa phát được âm thanh. Hãy thử lại.';
@@ -1043,7 +1050,7 @@
       modelMeaning.textContent = learning ? entry.meaning : '';
       modelMeaning.hidden = !learning;
       byId('audio-controls').hidden = !learning && !listening;
-      byId('audio-status').textContent = listening ? 'Bấm Shift trái để nghe lại.' : '';
+      byId('audio-status').textContent = listening ? 'Bấm Shift để nghe lại.' : '';
       byId('listen-actions').hidden = !listening;
       choices.hidden = !reading;
       form.hidden = reading;
@@ -1269,13 +1276,20 @@
     });
 
     playAudio.addEventListener('click', playPronunciation);
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Shift' || event.repeat || event.isComposing ||
+          event.ctrlKey || event.altKey || event.metaKey || lesson.hidden ||
+          byId('exercise').hidden || document.querySelector('dialog[open]') ||
+          document.querySelector('main').inert) return;
+      if (phase === 'read' && readingRounds[readingRound].promptKey === 'meaning') return;
+      const entry = words[index];
+      if (!entry) return;
+      if (phase === 'learn' || (phase === 'listen' && !answered)) playPronunciation();
+      else speakWord(entry.word);
+    });
+
     lesson.addEventListener('keydown', (event) => {
-      if (event.isComposing || event.altKey || event.metaKey || answered || lesson.hidden) return;
-      if (event.code === 'ShiftLeft' && phase === 'listen' && !event.ctrlKey) {
-        if (!event.repeat) playPronunciation();
-        return;
-      }
-      if (event.ctrlKey) return;
+      if (event.isComposing || event.altKey || event.metaKey || event.ctrlKey || answered || lesson.hidden) return;
       if (phase === 'read') {
         const position = choiceKeys.findIndex((key) => event.code === 'Key' + key);
         const choice = choices.children[position];
@@ -1413,6 +1427,14 @@
 
     speaker?.getVoices();
     applyTheme(loadValue(themeKey) === 'dark' ? 'dark' : 'light');
+    const syncDialog = byId('cloud-panel');
+    byId('open-sync').addEventListener('click', () => {
+      settings.open = false;
+      syncDialog.showModal();
+    });
+    byId('close-sync').addEventListener('click', () => syncDialog.close());
+    syncDialog.addEventListener('close', () => settings.querySelector('summary').focus());
+
     settings.addEventListener('change', (event) => {
       applyTheme(event.target.value);
       saveValue(themeKey, event.target.value);
