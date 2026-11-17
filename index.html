@@ -216,6 +216,7 @@
     </div>
     <p id="cloud-status" role="status">Đang kết nối…</p>
   </dialog>
+  <p class="shell feedback small" id="offline-banner" role="status" hidden></p>
   <main class="shell" inert>
     <p class="feedback small" id="storage-notice" role="status" hidden>Trình duyệt không lưu được dữ liệu trên máy. Các thay đổi chưa lưu sẽ mất khi tải lại trang.</p>
     <section id="home" aria-labelledby="home-title">
@@ -1530,7 +1531,12 @@
       }
     };
   </script>
-  <script type="module" src="./sync.js"></script>
+  <script type="module" src="./sync.js?v=offline-1"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch((error) => console.error('Offline cache:', error));
+    }
+  </script>
 </body>
 </html>
 
