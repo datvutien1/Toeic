@@ -143,6 +143,29 @@
     }
 
     .deck-toolbar { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: end; gap: 12px; margin-bottom: 16px; }
+    #exercise:has(.prompt[data-phase="read"]) .exercise-head h2 {
+      font-size: clamp(1.18rem, 2.5vw, 1.45rem);
+      line-height: 1.3;
+    }
+    #exercise:has(.prompt[data-phase="read"]) #phase-remaining { font-size: 1rem; margin-block: 10px; }
+    #exercise .prompt[data-phase="read"] { min-height: 114px; padding: 14px; gap: 8px; margin-block: 12px; }
+    #exercise .prompt[data-phase="read"] .term {
+      font-size: clamp(1.9rem, 4.8vw, 2.9rem);
+      line-height: 1.15;
+    }
+    #exercise .choices { gap: 10px; }
+    #exercise .choices .choice {
+      min-height: 58px; padding: 10px 13px; gap: 11px;
+      font-size: clamp(1.02rem, 2.2vw, 1.19rem); line-height: 1.35; align-items: center;
+    }
+    #exercise .choices .choice-key { width: 30px; height: 30px; font-size: .9rem; }
+    #exercise[data-compact] .prompt[data-phase="read"] { min-height: 88px; padding: 10px; }
+    #exercise[data-compact] .prompt[data-phase="read"] .term { font-size: clamp(1.6rem, 4vw, 2.25rem); }
+    #exercise[data-compact] .choices .choice { min-height: 50px; padding: 8px 10px; }
+    @media (max-width: 480px) {
+      #exercise .choices { gap: 8px; }
+      #exercise .choices .choice { min-height: 48px; }
+    }
     select, .import-dialog input, .import-dialog textarea { font: inherit; max-width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); color: var(--ink); }
     .import-dialog { width: min(580px, calc(100% - 28px)); max-height: calc(100dvh - 32px); padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--white); color: var(--ink); }
     .import-dialog::backdrop { background: #10191299; }
