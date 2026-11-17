@@ -147,19 +147,62 @@ login.addEventListener('submit', async (event) => {
   }
 });
 
+const importStatus = document.createElement('p');
+importStatus.setAttribute('role', 'status');
+importStatus.hidden = true;
+status.before(importStatus);
+
+function explainImport(message) {
+  importStatus.hidden = false;
+  importStatus.textContent = message;
+}
+
 get('cloud-import').addEventListener('change', async (event) => {
-  const file = event.target.files[0];
-  event.target.value = '';
-  if (!ready || !user || !file || busy || conflict || !app.atHome()) return;
+  const picker = event.currentTarget;
+  const file = picker.files[0];
+  if (!file) return;
+  picker.value = '';
+
+  if (!ready || !user) {
+    explainImport('Hãy đăng nhập và đợi Sổ từ tải dữ liệu trước khi nhập.');
+    return;
+  }
+  if (conflict || !app.atHome()) {
+    explainImport(conflict ? 'Hãy xử lý thông báo đồng bộ bên dưới rồi chọn lại tệp.' :
+      'Hãy về trang chủ Sổ từ rồi chọn lại tệp.');
+    return;
+  }
+
+  picker.disabled = true;
+  explainImport('Đang đọc bản sao lưu…');
   try {
-    const backup = JSON.parse(await file.text());
-    if (!app.valid(backup)) throw new Error('Invalid backup');
-    if (!app.atHome() || busy || conflict) return;
-    if (!confirm('Dùng bản sao lưu này để thay toàn bộ bộ từ và tiến độ của tài khoản hiện tại?')) return;
+    let backup;
+    try {
+      backup = JSON.parse((await file.text()).replace(/^\uFEFF/, ''));
+    } catch {
+      explainImport('Không đọc được tệp. Hãy chọn tệp JSON từ nút Xuất dữ liệu của Sổ từ.');
+      return;
+    }
+    if (!app.valid(backup)) {
+      explainImport('Định dạng chưa đúng. Hãy chọn tệp JSON từ nút Xuất dữ liệu của Sổ từ.');
+      return;
+    }
+    if (!app.atHome() || conflict) {
+      explainImport('Sổ từ chưa thể nhập lúc này. Hãy về trang chủ, xử lý thông báo đồng bộ nếu có rồi chọn lại tệp.');
+      return;
+    }
+    if (!confirm('Dùng bản sao lưu này để thay toàn bộ bộ từ và tiến độ của tài khoản hiện tại?')) {
+      explainImport('Đã hủy nhập bản sao lưu.');
+      return;
+    }
     app.apply(backup);
     app.onChange();
-  } catch {
-    say('Tệp này không phải bản sao lưu Sổ từ hợp lệ.');
+    explainImport('Đã nhập “' + file.name + '”. Xem trạng thái lưu lên Supabase bên dưới.');
+  } catch (error) {
+    console.error(error);
+    explainImport('Chưa nhập được bản sao lưu. Hãy tải lại trang rồi thử lại.');
+  } finally {
+    picker.disabled = false;
   }
 });
 
