@@ -1387,7 +1387,9 @@
     function startLesson(mode = 'auto') {
       const { fresh, due } = todayQueue();
       reviewing = mode === 'review' || (mode === 'auto' && due.length > 0);
-      words = (reviewing ? due : fresh).slice(0, wordsPerLesson);
+      const queue = reviewing ? due : fresh;
+      const batchSize = queue.length <= wordsPerLesson + 2 ? queue.length : wordsPerLesson;
+      words = queue.slice(0, batchSize);
       if (!words.length) {
         showHome();
         return;
