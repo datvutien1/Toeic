@@ -175,6 +175,11 @@
     .import-field textarea { min-height: 90px; resize: vertical; }
     .import-preview { max-height: 180px; overflow: auto; padding-left: 22px; overflow-wrap: anywhere; }
     #import-result { margin: 0 0 14px; }
+    .outcome-group { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+    .outcome-group h3 { margin: 0 0 10px; font-size: 1.05rem; }
+    .outcome-list { list-style: none; padding: 0; margin: 0; }
+    .outcome-list li { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; padding: 9px 0; overflow-wrap: anywhere; }
+    .outcome-level { margin-left: auto; font-size: .9rem; color: var(--green); }
   </style>
 </head>
 <body>
@@ -336,6 +341,7 @@
         <div class="score">Đọc đúng<strong id="read-score"></strong></div>
         <div class="score">Viết đúng<strong id="write-score"></strong></div>
       </div>
+      <div id="level-outcomes" aria-label="Kết quả cấp độ từng từ"></div>
       <div class="actions">
         <button class="btn" type="button" id="summary-home">Về trang chủ</button>
         <button class="btn primary" type="button" id="next-lesson">Học lượt tiếp theo →</button>
@@ -450,6 +456,7 @@
     let lessonWordCount = 0;
     const listeningReveals = new Set();
     const lessonDelays = new Map();
+    let lessonStartingLevels = [];
     const assessment = byId('self-assessment');
     const hintButton = byId('hint');
     let words = [];
@@ -1155,6 +1162,58 @@
       next.focus();
     }
 
+    function renderLevelOutcomes() {
+      const groups = [
+        { key: 'up', label: 'Lên cấp', words: [] },
+        { key: 'down', label: 'Xuống cấp', words: [] },
+        { key: 'same', label: 'Giữ cấp', words: [] },
+        { key: 'new', label: 'Từ mới vào LV1', words: [] }
+      ];
+      for (const { entry, level: before } of lessonStartingLevels) {
+        const after = records[entry.word]?.level || 0;
+        let key = 'same';
+        if (!before && after) key = 'new';
+        else if (after > before) key = 'up';
+        else if (after < before) key = 'down';
+        groups.find((group) => group.key === key).words.push({ entry, before, after });
+      }
+      const container = byId('level-outcomes');
+      container.replaceChildren();
+      for (const group of groups) {
+        if (group.key === 'new' && !group.words.length) continue;
+        const section = document.createElement('section');
+        section.className = 'outcome-group';
+        const title = document.createElement('h3');
+        title.textContent = group.label + ' · ' + group.words.length + ' từ';
+        section.append(title);
+        if (!group.words.length) {
+          const empty = document.createElement('p');
+          empty.className = 'muted small';
+          empty.textContent = 'Không có từ nào.';
+          section.append(empty);
+        } else {
+          const list = document.createElement('ul');
+          list.className = 'outcome-list';
+          for (const { entry, before, after } of group.words) {
+            const item = document.createElement('li');
+            const word = document.createElement('strong');
+            word.lang = 'en';
+            word.textContent = entry.word;
+            const meaning = document.createElement('span');
+            meaning.className = 'muted';
+            meaning.textContent = entry.meaning;
+            const levels = document.createElement('span');
+            levels.className = 'outcome-level';
+            levels.textContent = (before ? levelName(before) : 'Chưa học') + ' → ' + (after ? levelName(after) : 'Chưa học');
+            item.append(word, meaning, levels);
+            list.append(item);
+          }
+          section.append(list);
+        }
+        container.append(section);
+      }
+    }
+
     function levelName(level) {
       return level === reviewIntervals.length ? 'Nhớ sâu' : 'LV' + level;
     }
@@ -1368,6 +1427,7 @@
         byId('stage-write').removeAttribute('aria-current');
         byId('summary-copy').textContent = 'Đã cập nhật lịch ôn cho ' + lessonWordCount + ' từ.' +
           (practicing ? ' Đã luyện thêm ' + words.length + ' từ.' : '');
+        renderLevelOutcomes();
         byId('listen-score').textContent = listenedCount ? listenScore + '/' + listenedCount : 'Bỏ qua';
         byId('read-score').textContent = readScore + '/' + (lessonWordCount * readingRounds.length);
         byId('write-score').textContent = writeScore + '/' + lessonWordCount;
@@ -1411,6 +1471,7 @@
       writeScore = 0;
       completed = 0;
       lessonWordCount = words.length;
+      lessonStartingLevels = words.map((entry) => ({ entry, level: records[entry.word]?.level || 0 }));
       practicing = false;
       practiceWritingRound = 0;
       practiceNeeded.clear();
