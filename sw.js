@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'so-tu-shell-';
-const CACHE = CACHE_PREFIX + '2026-11-17-v2';
+const CACHE = CACHE_PREFIX + '2026-11-21-level-outcomes';
 const root = new URL(self.registration.scope);
 const page = new URL('index.html', root).href;
 const script = new URL('sync.js?v=offline-1', root).href;
