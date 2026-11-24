@@ -175,11 +175,13 @@
     .import-field textarea { min-height: 90px; resize: vertical; }
     .import-preview { max-height: 180px; overflow: auto; padding-left: 22px; overflow-wrap: anywhere; }
     #import-result { margin: 0 0 14px; }
-    .outcome-group { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
-    .outcome-group h3 { margin: 0 0 10px; font-size: 1.05rem; }
-    .outcome-list { list-style: none; padding: 0; margin: 0; }
-    .outcome-list li { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; padding: 9px 0; overflow-wrap: anywhere; }
-    .outcome-level { margin-left: auto; font-size: .9rem; color: var(--green); }
+    .outcome-list { list-style: none; padding: 10px 0 0; margin: 14px 0 0; border-top: 1px solid var(--line); }
+    .outcome-list li { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 5px 0; font-size: .92rem; overflow-wrap: anywhere; }
+    .outcome-icon { text-align: center; font-weight: 750; }
+    .outcome-list [data-change="up"], .outcome-list [data-change="new"] { color: var(--green); }
+    .outcome-list [data-change="down"] { color: var(--wrong); }
+    .outcome-level { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+    .shortcut { font-size: .75rem; opacity: .9; margin-left: 7px; }
   </style>
 </head>
 <body>
@@ -344,7 +346,7 @@
       <div id="level-outcomes" aria-label="Kết quả cấp độ từng từ"></div>
       <div class="actions">
         <button class="btn" type="button" id="summary-home">Về trang chủ</button>
-        <button class="btn primary" type="button" id="next-lesson">Học lượt tiếp theo →</button>
+        <button class="btn primary" type="button" id="next-lesson" aria-keyshortcuts="Shift+Enter">Học lượt tiếp theo → <span class="shortcut">Shift + Enter</span></button>
       </div>
     </section>
     </section>
@@ -1163,55 +1165,45 @@
     }
 
     function renderLevelOutcomes() {
-      const groups = [
-        { key: 'up', label: 'Lên cấp', words: [] },
-        { key: 'down', label: 'Xuống cấp', words: [] },
-        { key: 'same', label: 'Giữ cấp', words: [] },
-        { key: 'new', label: 'Từ mới vào LV1', words: [] }
-      ];
+      const container = byId('level-outcomes');
+      const list = document.createElement('ul');
+      list.className = 'outcome-list';
       for (const { entry, level: before } of lessonStartingLevels) {
         const after = records[entry.word]?.level || 0;
-        let key = 'same';
-        if (!before && after) key = 'new';
-        else if (after > before) key = 'up';
-        else if (after < before) key = 'down';
-        groups.find((group) => group.key === key).words.push({ entry, before, after });
-      }
-      const container = byId('level-outcomes');
-      container.replaceChildren();
-      for (const group of groups) {
-        if (group.key === 'new' && !group.words.length) continue;
-        const section = document.createElement('section');
-        section.className = 'outcome-group';
-        const title = document.createElement('h3');
-        title.textContent = group.label + ' · ' + group.words.length + ' từ';
-        section.append(title);
-        if (!group.words.length) {
-          const empty = document.createElement('p');
-          empty.className = 'muted small';
-          empty.textContent = 'Không có từ nào.';
-          section.append(empty);
-        } else {
-          const list = document.createElement('ul');
-          list.className = 'outcome-list';
-          for (const { entry, before, after } of group.words) {
-            const item = document.createElement('li');
-            const word = document.createElement('strong');
-            word.lang = 'en';
-            word.textContent = entry.word;
-            const meaning = document.createElement('span');
-            meaning.className = 'muted';
-            meaning.textContent = entry.meaning;
-            const levels = document.createElement('span');
-            levels.className = 'outcome-level';
-            levels.textContent = (before ? levelName(before) : 'Chưa học') + ' → ' + (after ? levelName(after) : 'Chưa học');
-            item.append(word, meaning, levels);
-            list.append(item);
-          }
-          section.append(list);
+        let symbol = '=';
+        let label = 'Giữ cấp';
+        let kind = 'same';
+        if (!before && after) {
+          symbol = '+';
+          label = 'Từ mới';
+          kind = 'new';
+        } else if (after > before) {
+          symbol = '↑';
+          label = 'Lên cấp';
+          kind = 'up';
+        } else if (after < before) {
+          symbol = '↓';
+          label = 'Xuống cấp';
+          kind = 'down';
         }
-        container.append(section);
+        const item = document.createElement('li');
+        item.dataset.change = kind;
+        const icon = document.createElement('span');
+        icon.className = 'outcome-icon';
+        icon.textContent = symbol;
+        icon.setAttribute('aria-label', label);
+        icon.title = label;
+        const word = document.createElement('strong');
+        word.lang = 'en';
+        word.textContent = entry.word;
+        const levels = document.createElement('span');
+        levels.className = 'outcome-level';
+        levels.textContent = (before ? 'LV' + before : 'Mới') + ' → ' + (after ? 'LV' + after : 'Mới');
+        levels.title = label + ' · ' + (after === 6 ? 'LV6 là Nhớ sâu' : levels.textContent);
+        item.append(icon, word, levels);
+        list.append(item);
       }
+      container.replaceChildren(list);
     }
 
     function levelName(level) {
@@ -1538,6 +1530,16 @@
     byId('start-today').addEventListener('click', () => startLesson('review'));
     byId('start-new').addEventListener('click', () => startLesson('new'));
     byId('next-lesson').addEventListener('click', () => startLesson());
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' || !event.shiftKey || event.repeat || event.isComposing ||
+          event.ctrlKey || event.altKey || event.metaKey || lesson.hidden ||
+          byId('summary').hidden || document.querySelector('dialog[open]') ||
+          document.querySelector('main').inert) return;
+      const button = byId('next-lesson');
+      if (button.hidden || button.disabled) return;
+      event.preventDefault();
+      button.click();
+    });
     byId('back-home').addEventListener('click', showHome);
     byId('summary-home').addEventListener('click', showHome);
     window.addEventListener('focus', () => {
