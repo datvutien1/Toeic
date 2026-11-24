@@ -368,6 +368,18 @@
     </section>
   </main>
 
+  <dialog class="import-dialog" id="mastery-dialog" aria-labelledby="mastery-title" aria-describedby="mastery-detail">
+    <h2 id="mastery-title">Tiếp tục ôn từ đã nhớ sâu?</h2>
+    <p class="term" id="mastery-word" lang="en"></p>
+    <p id="mastery-meaning" class="muted"></p>
+    <p id="mastery-detail">Bạn đã ôn thành công từ này 3 lần ở LV6 (Nhớ sâu). Bạn có muốn tiếp tục ôn theo lịch 8 ngày không?</p>
+    <div class="actions">
+      <button class="btn primary" type="button" id="mastery-regular" autofocus>Có · Ôn sau 8 ngày</button>
+      <button class="btn" type="button" id="mastery-monthly">Không cần · Ôn mỗi tháng</button>
+      <button class="btn" type="button" id="mastery-later">Để sau</button>
+    </div>
+  </dialog>
+
   <dialog class="import-dialog" id="import-dialog" aria-labelledby="import-title">
     <form id="import-form">
       <h2 id="import-title">Thêm từ vào bộ từ</h2>
@@ -476,6 +488,9 @@
     const listeningReveals = new Set();
     const lessonDelays = new Map();
     let lessonStartingLevels = [];
+    const masteryDialog = byId('mastery-dialog');
+    const masteryDeferred = new Set();
+    let masteryWord = null;
     const assessment = byId('self-assessment');
     const hintButton = byId('hint');
     let words = [];
@@ -790,6 +805,14 @@
           }
           if (Number.isSafeInteger(due) && due > 0) {
             valid[entry.word] = { level: record.level, due };
+            if (record.level === reviewIntervals.length) {
+              const count = Number.isSafeInteger(record.masteryReviews) && record.masteryReviews >= 0
+                ? Math.min(3, record.masteryReviews) : 0;
+              valid[entry.word].masteryReviews = count;
+              if (count === 3 && ['regular', 'monthly'].includes(record.masteryReviewMode)) {
+                valid[entry.word].masteryReviewMode = record.masteryReviewMode;
+              }
+            }
           }
         }
       } catch {
@@ -828,6 +851,16 @@
     }
 
     function reviewDueAt(now, interval) {
+      if (interval === 'monthly') {
+        const date = new Date(now);
+        const day = date.getDate();
+        date.setHours(0, 0, 0, 0);
+        date.setDate(1);
+        date.setMonth(date.getMonth() + 1);
+        const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+        date.setDate(Math.min(day, lastDay));
+        return date.getTime();
+      }
       if (interval < dayMs) return now + interval;
       const date = new Date(now);
       date.setHours(0, 0, 0, 0);
@@ -836,17 +869,82 @@
     }
 
     function scheduleReview(entry, adjustment) {
-      const previous = records[entry.word]?.level || 0;
+      const priorRecord = records[entry.word];
+      const previous = priorRecord?.level || 0;
       const level = Math.min(reviewIntervals.length, Math.max(1, previous + adjustment));
-      const interval = adjustment > 0 ? reviewIntervals[level - 1] : reviewIntervals[0];
       const now = Date.now();
+      const mastery = {};
+      if (level === reviewIntervals.length) {
+        let count = previous === level ? priorRecord.masteryReviews || 0 : 0;
+        // Entering LV6 is not an LV6 review. Count only successful due reviews.
+        if (previous === level && reviewing && priorRecord.due <= now && adjustment > 0) count++;
+        mastery.masteryReviews = Math.min(3, count);
+        if (previous === level && priorRecord.masteryReviewMode) {
+          mastery.masteryReviewMode = priorRecord.masteryReviewMode;
+        }
+      }
+      const interval = adjustment > 0
+        ? (mastery.masteryReviewMode === 'monthly' ? 'monthly' : reviewIntervals[level - 1])
+        : reviewIntervals[0];
       const due = reviewDueAt(now, interval);
-      records[entry.word] = { level, due };
+      // Dropping below LV6 starts a new mastery cycle and clears monthly mode.
+      records[entry.word] = { level, due, ...mastery };
       lessonDelays.set(entry.word, interval);
       // Use the latest completed word as the shared finish time for this round.
       for (const [word, interval] of lessonDelays) records[word].due = reviewDueAt(now, interval);
       saveValue(progressKey, JSON.stringify(records));
       return { previous, level, delay: due - now };
+    }
+
+    function needsMasteryChoice(record) {
+      return record?.level === reviewIntervals.length && record.masteryReviews >= 3 && !record.masteryReviewMode;
+    }
+
+    function maybeAskMasteryPreference() {
+      if (document.querySelector('main').inert || document.querySelector('dialog[open]') ||
+          (home.hidden && (lesson.hidden || byId('summary').hidden))) return;
+      const entry = vocabulary.find((item) => !masteryDeferred.has(item.word) && needsMasteryChoice(records[item.word]));
+      if (!entry) return;
+      masteryWord = entry.word;
+      byId('mastery-word').textContent = entry.word;
+      byId('mastery-meaning').textContent = entry.meaning;
+      stopPronunciation();
+      masteryDialog.showModal();
+    }
+
+    function chooseMasteryReview(mode) {
+      const record = records[masteryWord];
+      if (needsMasteryChoice(record)) {
+        record.masteryReviewMode = mode;
+        const interval = mode === 'monthly' ? 'monthly' : reviewIntervals[reviewIntervals.length - 1];
+        record.due = reviewDueAt(Date.now(), interval);
+        lessonDelays.set(masteryWord, interval);
+        saveValue(progressKey, JSON.stringify(records));
+      }
+      masteryWord = null;
+      masteryDialog.close();
+      if (!home.hidden) renderHome();
+      else renderSummaryRemaining();
+      maybeAskMasteryPreference();
+    }
+
+    byId('mastery-regular').addEventListener('click', () => chooseMasteryReview('regular'));
+    byId('mastery-monthly').addEventListener('click', () => chooseMasteryReview('monthly'));
+    byId('mastery-later').addEventListener('click', () => {
+      masteryDeferred.add(masteryWord);
+      masteryWord = null;
+      masteryDialog.close();
+      maybeAskMasteryPreference();
+    });
+    masteryDialog.addEventListener('cancel', () => {
+      masteryDeferred.add(masteryWord);
+      masteryWord = null;
+    });
+
+    function renderSummaryRemaining() {
+      const { fresh, due } = todayQueue();
+      byId('summary-remaining').textContent = 'Còn ' + due.length + ' từ đến hạn ôn.';
+      byId('next-lesson').hidden = fresh.length + due.length === 0;
     }
 
     function renderToday() {
@@ -867,6 +965,7 @@
         const message = count + ' từ cần học sau ' + formatRemaining(upcoming - now) + ' nữa';
         if (nextReview.textContent !== message) nextReview.textContent = message;
       }
+      maybeAskMasteryPreference();
       return learned;
     }
 
@@ -1312,7 +1411,9 @@
         if (highLevel) {
           const atMaximum = records[entry.word].level === reviewIntervals.length;
           keep.textContent = 'Giữ cấp, ôn sau 2 giờ';
-          promote.textContent = atMaximum ? 'Giữ Nhớ sâu, ôn sau 8 ngày' : 'Tăng cấp';
+          promote.textContent = atMaximum
+            ? (records[entry.word].masteryReviewMode === 'monthly' ? 'Giữ Nhớ sâu, ôn sau 1 tháng' : 'Giữ Nhớ sâu, ôn sau 8 ngày')
+            : 'Tăng cấp';
           byId('assessment-detail').textContent = hintCount ? 'Bạn đã dùng một gợi ý cho từ này.' : 'Bạn đã trả lời sai một lần với từ này.';
         } else {
           keep.textContent = 'Mình cần ôn thêm';
@@ -1471,14 +1572,10 @@
         byId('listen-score').textContent = listenedCount ? listenScore + '/' + listenedCount : 'Bỏ qua';
         byId('read-score').textContent = readScore + '/' + (lessonWordCount * readingRounds.length);
         byId('write-score').textContent = writeScore + '/' + lessonWordCount;
-        const { fresh, due } = todayQueue();
-        const remaining = fresh.length + due.length;
-        byId('summary-remaining').textContent = remaining
-          ? 'Còn ' + remaining + ' từ có thể học tiếp (' + due.length + ' từ đến hạn ôn, ' + fresh.length + ' từ mới).'
-          : 'Bạn đã học hết các từ có thể học lúc này.';
-        byId('next-lesson').hidden = remaining === 0;
+        renderSummaryRemaining();
         byId('summary-title').focus({ preventScroll: true });
         byId('summary').scrollIntoView({ block: 'nearest' });
+        maybeAskMasteryPreference();
         return;
       }
       index++;
@@ -1520,6 +1617,7 @@
       spellingTypos.clear();
       listeningReveals.clear();
       lessonDelays.clear();
+      masteryDeferred.clear();
       transition.hidden = true;
       byId('summary').hidden = true;
       byId('exercise').hidden = false;
@@ -1597,6 +1695,7 @@
     });
     window.setInterval(() => {
       if (!home.hidden) renderToday();
+      else if (!byId('summary').hidden) renderSummaryRemaining();
     }, 1000);
     renderHome();
     function exportStudyBackup() {
@@ -1631,7 +1730,7 @@
     window.soTu = {
       snapshot,
       valid: validBackup,
-      atHome: () => !home.hidden && !byId('import-dialog').open,
+      atHome: () => !home.hidden && !byId('import-dialog').open && !masteryDialog.open,
       onChange: null,
       apply(payload) {
         cloudValues.set(libraryKey, JSON.stringify(payload.library));

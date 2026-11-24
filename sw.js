@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'so-tu-shell-';
-const CACHE = CACHE_PREFIX + '2026-11-24-result-tiles';
+const CACHE = CACHE_PREFIX + '2026-11-24-mastery-monthly';
 const root = new URL(self.registration.scope);
 const page = new URL('index.html', root).href;
 const script = new URL('sync.js?v=offline-1', root).href;
