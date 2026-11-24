@@ -452,6 +452,7 @@
     let vocabulary = libraryWords(library);
     const records = loadRecords();
     const mistakes = new Map();
+    const spellingTypos = new Map();
     const practiceNeeded = new Set();
     let practicing = false;
     let practiceWritingRound = 0;
@@ -1258,6 +1259,24 @@
       return result + '. Ôn lại sau ' + formatRemaining(delay) + '.';
     }
 
+    function spellingSimilarity(guess, expected) {
+      const typed = Array.from(guess);
+      const target = Array.from(expected);
+      let previous = Array.from({ length: target.length + 1 }, (_, index) => index);
+      for (let i = 1; i <= typed.length; i++) {
+        const current = [i];
+        for (let j = 1; j <= target.length; j++) {
+          current[j] = Math.min(
+            previous[j] + 1,
+            current[j - 1] + 1,
+            previous[j - 1] + Number(typed[i - 1] !== target[j - 1])
+          );
+        }
+        previous = current;
+      }
+      return 1 - previous[target.length] / Math.max(typed.length, target.length, 1);
+    }
+
     function isHighLevel(entry) {
       return records[entry.word]?.level >= 4;
     }
@@ -1266,7 +1285,7 @@
       const errors = mistakes.get(entry.word) || 0;
       const helpUsed = errors + hintCount;
       const highLevel = isHighLevel(entry);
-      if (helpUsed >= 2 || listeningReveals.has(entry.word)) {
+      if (helpUsed >= 2 || listeningReveals.has(entry.word) || (spellingTypos.get(entry.word) || 0) > 2) {
         finishWriting(true, -1);
       } else if (hintCount === 1 || (highLevel && errors === 1)) {
         form.hidden = true;
@@ -1307,12 +1326,25 @@
         else finishWriting(true);
       } else {
         markForPractice(entry);
-        if (!practicing && (phase !== 'listen' || isHighLevel(entry))) countMistake(entry);
-        const message = {
+        const isTypo = !practicing && isHighLevel(entry) &&
+          spellingSimilarity(guess, wordKey(entry.word)) > 0.5;
+        if (isTypo) {
+          spellingTypos.set(entry.word, (spellingTypos.get(entry.word) || 0) + 1);
+        } else if (!practicing && (phase !== 'listen' || isHighLevel(entry))) {
+          countMistake(entry);
+        }
+        const typoCount = spellingTypos.get(entry.word) || 0;
+        const messages = {
           learn: 'Chưa khớp. Hãy nhìn từ mẫu và gõ lại.',
           listen: 'Chưa đúng. Hãy nghe lại rồi thử gõ hoặc xem đáp án.',
           write: 'Chưa đúng. Bạn có thể thử lại, mở gợi ý hoặc xem đáp án.'
-        }[phase];
+        };
+        let message = messages[phase];
+        if (isTypo && typoCount <= 2) {
+          message = 'Khớp trên 50% ký tự · Lệch chính tả ' + typoCount + '/2 lần. Hãy sửa và gõ đúng để tiếp tục; bạn vẫn có thể lên cấp.';
+        } else if (isTypo) {
+          message = 'Đã lệch chính tả quá 2 lần. Từ này sẽ hạ một cấp khi chốt phần Viết. Hãy sửa lại để tiếp tục.';
+        }
         showFeedback(message, 'retry');
         answer.focus();
         answer.select();
@@ -1468,6 +1500,7 @@
       practiceWritingRound = 0;
       practiceNeeded.clear();
       mistakes.clear();
+      spellingTypos.clear();
       listeningReveals.clear();
       lessonDelays.clear();
       transition.hidden = true;
