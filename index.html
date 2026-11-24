@@ -175,12 +175,28 @@
     .import-field textarea { min-height: 90px; resize: vertical; }
     .import-preview { max-height: 180px; overflow: auto; padding-left: 22px; overflow-wrap: anywhere; }
     #import-result { margin: 0 0 14px; }
-    .outcome-list { list-style: none; padding: 10px 0 0; margin: 14px 0 0; border-top: 1px solid var(--line); }
-    .outcome-list li { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 5px 0; font-size: .92rem; overflow-wrap: anywhere; }
-    .outcome-icon { text-align: center; font-weight: 750; }
+    .outcome-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 12px 0 0; margin: 12px 0 0; border-top: 1px solid var(--line); }
+    .outcome-list li { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: center; gap: 3px 7px; flex: 1 1 160px; max-width: 240px; min-width: 0; padding: 9px 12px; border: 1px solid var(--line); border-radius: 11px; font-size: .95rem; overflow-wrap: anywhere; }
+    .outcome-icon { grid-row: span 2; text-align: center; font-weight: 750; font-size: 1.1rem; }
     .outcome-list [data-change="up"], .outcome-list [data-change="new"] { color: var(--green); }
     .outcome-list [data-change="down"] { color: var(--wrong); }
-    .outcome-level { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+    .outcome-level { grid-column: 2; color: var(--muted); font-size: .82rem; white-space: nowrap; }
+    #lesson:has(#summary:not([hidden])) > .eyebrow,
+    #lesson:has(#summary:not([hidden])) > h1,
+    #lesson:has(#summary:not([hidden])) > .intro,
+    #lesson:has(#summary:not([hidden])) > .stages,
+    #lesson:has(#summary:not([hidden])) > .progress-caption,
+    #lesson:has(#summary:not([hidden])) > progress,
+    #lesson:has(#summary:not([hidden])) > .transition { display: none; }
+    #summary { scroll-margin-block: 12px; }
+    #summary .done-copy { margin-block: 8px 12px; }
+    #summary .score { padding: 9px 12px; font-size: .9rem; }
+    #summary .score strong { display: inline; margin-left: 8px; font-size: 1.15rem; }
+    @media (max-width: 480px) {
+      .outcome-list li { flex-basis: calc(50% - 4px); max-width: none; padding: 8px; }
+      #summary .score { padding: 8px; }
+      #summary .score strong { display: block; margin-left: 0; }
+    }
     .shortcut { font-size: .75rem; opacity: .9; margin-left: 7px; }
   </style>
 </head>
@@ -1461,7 +1477,8 @@
           ? 'Còn ' + remaining + ' từ có thể học tiếp (' + due.length + ' từ đến hạn ôn, ' + fresh.length + ' từ mới).'
           : 'Bạn đã học hết các từ có thể học lúc này.';
         byId('next-lesson').hidden = remaining === 0;
-        byId('summary-title').focus();
+        byId('summary-title').focus({ preventScroll: true });
+        byId('summary').scrollIntoView({ block: 'nearest' });
         return;
       }
       index++;
