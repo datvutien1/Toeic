@@ -342,6 +342,7 @@
         <p class="small" id="assessment-detail"></p>
         <div class="actions">
           <button class="btn" type="button" id="assess-down" aria-describedby="assessment-question assessment-detail">Mình cần ôn thêm</button>
+          <button class="btn" type="button" id="assess-keep" aria-describedby="assessment-question assessment-detail" hidden>Giữ cấp</button>
           <button class="btn primary" type="button" id="assess-up" aria-describedby="assessment-question assessment-detail">Mình nhớ được</button>
         </div>
       </section>
@@ -481,6 +482,7 @@
     const records = loadRecords();
     const mistakes = new Map();
     const spellingTypos = new Map();
+    const deferredAdjustments = new Map();
     const practiceNeeded = new Set();
     let practicing = false;
     let practiceWritingRound = 0;
@@ -1179,6 +1181,8 @@
       const entry = words[index];
       answered = false;
       hintCount = 0;
+      assessment.dataset.reason = '';
+      byId('assess-keep').hidden = true;
       renderPhaseRemaining();
       const round = reading ? readingRounds[readingRound] : null;
       const titles = { learn: 'Gõ theo từ mẫu', listen: 'Nghe và gõ từ', write: 'Viết từ tiếng Anh' };
@@ -1340,11 +1344,12 @@
       } else if (phase === 'write') {
         message = (correct ? 'Chính xác! ' : 'Đáp án là ') + entry.word + '.';
         if (practicing) {
-          if (reviewing && practiceWritingRound === 1) message += ' ' + reviewResult(entry, 1);
+          if (reviewing && practiceWritingRound === 1) message += ' ' + reviewResult(entry, deferredAdjustments.get(entry.word) ?? 1);
         } else {
           if (correct) writeScore++;
           if (reviewing && practiceNeeded.has(entry.word)) {
-            message += ' Từ này sẽ lên cấp sau phần luyện thêm.';
+            deferredAdjustments.set(entry.word, assessment.dataset.reason === 'spelling' ? adjustment : 1);
+            message += ' Sẽ cập nhật cấp độ sau phần luyện thêm.';
           } else {
             message += ' ' + reviewResult(entry, adjustment);
           }
@@ -1400,12 +1405,30 @@
       const errors = mistakes.get(entry.word) || 0;
       const helpUsed = errors + hintCount;
       const highLevel = isHighLevel(entry);
-      if (helpUsed >= 2 || listeningReveals.has(entry.word) || (spellingTypos.get(entry.word) || 0) > 2) {
+      const typoCount = spellingTypos.get(entry.word) || 0;
+      if (helpUsed >= 2 || listeningReveals.has(entry.word)) {
         finishWriting(true, -1);
+      } else if (typoCount >= 2) {
+        if (reviewing && !highLevel && errors === 1) queuePractice(entry);
+        const level = records[entry.word]?.level || 0;
+        form.hidden = true;
+        feedback.hidden = true;
+        assessment.hidden = false;
+        assessment.dataset.reason = 'spelling';
+        byId('assessment-question').textContent = 'Bạn muốn đánh giá cấp độ của “' + entry.word + '” thế nào?';
+        byId('assessment-detail').textContent = 'Bạn đã gõ lệch chính tả ' + typoCount +
+          ' lần nhưng mỗi lần vẫn khớp trên 60% ký tự. Bạn có thể chọn lên cấp, giữ cấp hoặc hạ cấp.' +
+          (!level ? ' Từ mới bắt đầu ở LV1.' : level === 1 ? ' LV1 là cấp thấp nhất.' : level === reviewIntervals.length ? ' LV6 là cấp cao nhất.' : '');
+        byId('assess-down').textContent = level > 1 ? 'Xuống LV' + (level - 1) : 'Giữ LV1 (thấp nhất)';
+        byId('assess-keep').textContent = level ? 'Giữ LV' + level : 'Bắt đầu LV1';
+        byId('assess-keep').hidden = false;
+        byId('assess-up').textContent = level === reviewIntervals.length ? 'Giữ LV6 (cao nhất)' : level ? 'Lên LV' + (level + 1) : 'Bắt đầu LV1';
+        byId('assess-keep').focus();
       } else if (hintCount === 1 || (highLevel && errors === 1)) {
         form.hidden = true;
         feedback.hidden = true;
         assessment.hidden = false;
+        byId('assessment-question').textContent = 'Bạn có thể tự nhớ lại từ này không?';
         const keep = byId('assess-down');
         const promote = byId('assess-up');
         if (highLevel) {
@@ -1443,8 +1466,7 @@
         else finishWriting(true);
       } else {
         markForPractice(entry);
-        const isTypo = !practicing && isHighLevel(entry) &&
-          spellingSimilarity(guess, wordKey(entry.word)) > 0.5;
+        const isTypo = !practicing && spellingSimilarity(guess, wordKey(entry.word)) > 0.6;
         if (isTypo) {
           spellingTypos.set(entry.word, (spellingTypos.get(entry.word) || 0) + 1);
         } else if (!practicing && (phase !== 'listen' || isHighLevel(entry))) {
@@ -1457,10 +1479,10 @@
           write: 'Chưa đúng. Bạn có thể thử lại, mở gợi ý hoặc xem đáp án.'
         };
         let message = messages[phase];
-        if (isTypo && typoCount <= 2) {
-          message = 'Khớp trên 50% ký tự · Lệch chính tả ' + typoCount + '/2 lần. Hãy sửa và gõ đúng để tiếp tục; bạn vẫn có thể lên cấp.';
+        if (isTypo && typoCount === 1) {
+          message = 'Khớp trên 60% ký tự · Lệch chính tả 1 lần. Lần này không làm bạn tụt cấp. Hãy sửa và gõ đúng để tiếp tục.';
         } else if (isTypo) {
-          message = 'Đã lệch chính tả quá 2 lần. Từ này sẽ hạ một cấp khi chốt phần Viết. Hãy sửa lại để tiếp tục.';
+          message = 'Khớp trên 60% ký tự · Lệch chính tả ' + typoCount + ' lần. Hãy gõ lại đúng; cuối phần Viết bạn sẽ chọn lên, giữ hoặc hạ cấp.';
         }
         showFeedback(message, 'retry');
         answer.focus();
@@ -1493,7 +1515,10 @@
       finishWriting(false, -1);
     });
     byId('assess-down').addEventListener('click', () => {
-      if (!assessment.hidden) finishWriting(true, isHighLevel(words[index]) ? 0 : -1);
+      if (!assessment.hidden) finishWriting(true, assessment.dataset.reason === 'spelling' ? -1 : isHighLevel(words[index]) ? 0 : -1);
+    });
+    byId('assess-keep').addEventListener('click', () => {
+      if (!assessment.hidden && assessment.dataset.reason === 'spelling') finishWriting(true, 0);
     });
     byId('assess-up').addEventListener('click', () => {
       if (!assessment.hidden) finishWriting(true, 1);
@@ -1615,6 +1640,7 @@
       practiceNeeded.clear();
       mistakes.clear();
       spellingTypos.clear();
+      deferredAdjustments.clear();
       listeningReveals.clear();
       lessonDelays.clear();
       masteryDeferred.clear();
